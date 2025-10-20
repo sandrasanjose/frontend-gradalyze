@@ -1,0 +1,15 @@
+# Never commit env files
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Node modules and build artifacts
+node_modules/
+dist/
+.cache/
+
+# Logs and system files
+*.log
+.DS_Store
+Thumbs.db
