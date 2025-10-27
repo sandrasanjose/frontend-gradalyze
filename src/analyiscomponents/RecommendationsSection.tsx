@@ -10,6 +10,14 @@ type Recommendation = {
   title: string;
   description?: string;
   url?: string;
+  logo_url?: string;
+  location?: string;
+  industry?: string;
+  company_size?: string;
+  locations?: string[];
+  roles?: string[];
+  hiring_tags?: string[];
+  linkedin_url?: string;
 };
 
 const getInitials = (name: string | undefined): string => {
@@ -23,7 +31,7 @@ const RecommendationsSection = ({ userEmail }: Props) => {
   const [companies, setCompanies] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<any | null>(null);
+  const [selected, setSelected] = useState<Recommendation | null>(null);
   // Gemini ping removed; not used in Objective 3 anymore
 
   useEffect(() => {
@@ -54,9 +62,9 @@ const RecommendationsSection = ({ userEmail }: Props) => {
           console.warn('[RECS] error body (mount):', txt);
           setError(txt || 'Failed to fetch recommendations');
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('[RECS] fetch failed (mount):', e);
-        setError(e?.message || 'Failed to fetch recommendations');
+        setError(e instanceof Error ? e.message : 'Failed to fetch recommendations');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -94,15 +102,15 @@ const RecommendationsSection = ({ userEmail }: Props) => {
               });
               console.log('[RECS] response (manual):', res.status, res.ok);
               const text = await res.text();
-              let json: any = {};
+              let json: unknown = {};
               try { json = text ? JSON.parse(text) : {}; } catch {}
-              console.log('[RECS] body (manual):', json || text);
-              if (!res.ok) throw new Error(json?.message || 'Request failed');
-              const companyRecs = json.job_recommendations?.company_recommendations || [];
+              console.log('[RECS] body (manual):', json as Record<string, unknown> || text);
+              if (!res.ok) throw new Error((json as { message?: string })?.message || 'Request failed');
+              const companyRecs = (json as { job_recommendations?: { company_recommendations?: Recommendation[] } })?.job_recommendations?.company_recommendations || [];
               setCompanies(companyRecs);
-            } catch (e: any) {
+            } catch (e: unknown) {
               console.error('[RECS] fetch failed (manual):', e);
-              setError(e?.message || 'Failed to refresh');
+              setError(e instanceof Error ? e.message : 'Failed to refresh');
             } finally {
               setLoading(false);
             }
@@ -126,7 +134,7 @@ const RecommendationsSection = ({ userEmail }: Props) => {
         </div>
       ) : (
         <ul className="space-y-4">
-          {companies.map((rec: any, idx) => (
+          {companies.map((rec: Recommendation, idx) => (
             <li
               key={rec.id ?? idx}
               className="border border-gray-800 rounded-md p-4 hover:border-gray-700 transition-colors flex items-start gap-4 cursor-pointer"

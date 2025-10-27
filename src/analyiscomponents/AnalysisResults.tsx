@@ -125,6 +125,7 @@ const AnalysisResults = ({
         isDark 
           ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50' 
           : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
+          
       }`}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Archetype Summary</h3>

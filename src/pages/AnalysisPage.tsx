@@ -346,41 +346,94 @@ const AnalysisPage = () => {
   };
 
   const getCurriculumOrder = (course: string): string[] => {
-    const courseLower = (course || '').toLowerCase();
-    
-    if (courseLower.includes('information technology')) {
-      return [
-        // 1st Year 1st Sem
-        'it_fy1_icc0101', 'it_fy1_icc0101_1', 'it_fy1_icc0102', 'it_fy1_icc0102_1', 'it_fy1_ipp0010', 'it_fy1_mmw0001', 'it_fy1_pcm0006', 'it_fy1_sts0002', 'it_fy1_aap0007', 'it_fy1_ped0001', 'it_fy1_nstp01',
-        // 1st Year 2nd Sem
-        'it_fy2_cet0111', 'it_fy2_cet0114', 'it_fy2_cet0114_1', 'it_fy2_eit0121', 'it_fy2_eit0121_1a', 'it_fy2_eit0122', 'it_fy2_eit0123', 'it_fy2_eit0123_1', 'it_fy2_gtb121', 'it_fy2_icc0103', 'it_fy2_icc0103_1', 'it_fy2_ped0013', 'it_fy2_nstp02',
-        // 2nd Year 1st Sem
-        'it_sy1_cet0121', 'it_sy1_cet0225', 'it_sy1_cet0225_1', 'it_sy1_eit0221', 'it_sy1_eit0221_1', 'it_sy1_eit0222', 'it_sy1_eit0222_1', 'it_sy1_eit0223', 'it_sy1_eit0223_1', 'it_sy1_eit0224', 'it_sy1_eit0224_1', 'it_sy1_eit0225', 'it_sy1_eit0225_1', 'it_sy1_eit0226', 'it_sy1_eit0226_1', 'it_sy1_eit0227', 'it_sy1_eit0227_1', 'it_sy1_ped0021',
-        // 2nd Year 2nd Sem
-        'it_sy2_eit0321', 'it_sy2_eit0321_1', 'it_sy2_eit0322', 'it_sy2_eit0322_1', 'it_sy2_eit0323', 'it_sy2_eit0323_1', 'it_sy2_eit0324', 'it_sy2_eit0324_1', 'it_sy2_eit0325', 'it_sy2_eit0325_1', 'it_sy2_eit0326', 'it_sy2_eit0326_1', 'it_sy2_eit0327', 'it_sy2_eit0327_1', 'it_sy2_eit0328', 'it_sy2_eit0328_1', 'it_sy2_ped0031',
-        // 3rd Year 1st Sem
-        'it_ty1_eit0421', 'it_ty1_eit0421_1', 'it_ty1_eit0422', 'it_ty1_eit0422_1', 'it_ty1_eit0423', 'it_ty1_eit0423_1', 'it_ty1_eit0424', 'it_ty1_eit0424_1', 'it_ty1_eit0425', 'it_ty1_eit0425_1', 'it_ty1_eit0426', 'it_ty1_eit0426_1', 'it_ty1_eit0427', 'it_ty1_eit0427_1', 'it_ty1_eit0428', 'it_ty1_eit0428_1', 'it_ty1_ped0041',
-        // 3rd Year 2nd Sem
-        'it_ty2_eit0521', 'it_ty2_eit0521_1', 'it_ty2_eit0522', 'it_ty2_eit0522_1', 'it_ty2_eit0523', 'it_ty2_eit0523_1', 'it_ty2_eit0524', 'it_ty2_eit0524_1', 'it_ty2_eit0525', 'it_ty2_eit0525_1', 'it_ty2_eit0526', 'it_ty2_eit0526_1', 'it_ty2_eit0527', 'it_ty2_eit0527_1', 'it_ty2_eit0528', 'it_ty2_eit0528_1', 'it_ty2_ped0051',
-        // 4th Year 1st Sem
-        'it_fy1_eit0621', 'it_fy1_eit0621_1', 'it_fy1_eit0622', 'it_fy1_eit0622_1', 'it_fy1_eit0623', 'it_fy1_eit0623_1', 'it_fy1_eit0624', 'it_fy1_eit0624_1', 'it_fy1_eit0625', 'it_fy1_eit0625_1', 'it_fy1_eit0626', 'it_fy1_eit0626_1', 'it_fy1_eit0627', 'it_fy1_eit0627_1', 'it_fy1_eit0628', 'it_fy1_eit0628_1', 'it_fy1_ped0061',
-        // 4th Year 2nd Sem
-        'it_fy2_eit0721', 'it_fy2_eit0721_1', 'it_fy2_eit0722', 'it_fy2_eit0722_1', 'it_fy2_eit0723', 'it_fy2_eit0723_1', 'it_fy2_eit0724', 'it_fy2_eit0724_1', 'it_fy2_eit0725', 'it_fy2_eit0725_1', 'it_fy2_eit0726', 'it_fy2_eit0726_1', 'it_fy2_eit0727', 'it_fy2_eit0727_1', 'it_fy2_eit0728', 'it_fy2_eit0728_1', 'it_fy2_ped0071',
-        // 4th Year 2nd Sem (Additional)
-        'it_fy2_eit_elective1', 'it_fy2_eit_elective2', 'it_fy2_eit_elective3', 'it_fy2_eit_elective4', 'it_fy2_eit_elective5', 'it_fy2_eit_elective6',
-        // 4th Year 2nd Sem (Final)
-        'iip0101a', 'iip0101_1'
-      ];
-    } else if (courseLower.includes('computer science')) {
-      return [
-        // CS curriculum would go here with similar structure
-        // For now, return empty array
-      ];
-    }
-    
-    // Return empty array if course not recognized
-    return [];
-  };
+  const courseLower = (course || '').toLowerCase();
+
+  // --- BS INFORMATION TECHNOLOGY ---
+  if (courseLower.includes('information technology')) {
+    return [
+      // --- BSIT Year 1 / First Semester ---
+      'it_fy1_sts0002', 'it_fy1_aap0007', 'it_fy1_pcm0006', 'it_fy1_mmw0001', 'it_fy1_ipp0010', 
+      'it_fy1_icc0101', 'it_fy1_icc0101_1', 'it_fy1_icc0102', 'it_fy1_icc0102_1', 'it_fy1_ped0001', 
+      'it_fy1_nstp01',
+
+      // --- BSIT Year 1 / Second Semester ---
+      'it_fy2_cet0111', 'it_fy2_cet0114', 'it_fy2_cet0114_1', 'it_fy2_eit0121', 'it_fy2_eit0121_1a',
+      'it_fy2_eit0122', 'it_fy2_eit0123', 'it_fy2_eit0123_1', 'it_fy2_icc0103', 'it_fy2_icc0103_1',
+      'it_fy2_gtb121', 'it_fy2_ped0013', 'it_fy2_nstp02',
+
+
+      // --- BSIT Year 2 / First Semester ---
+      'it_sy1_cet0121', 'it_sy1_cet0225', 'it_sy1_cet0225_1', 'it_sy1_tcw0005', 'it_sy1_icc0104', 
+      'it_sy1_icc0104_1', 'it_sy1_eit0211', 'it_sy1_eit0211_1a', 'it_sy1_ppc122', 'it_sy1_eit_elective1', 
+      'it_sy1_ped0054',
+
+      // --- BSIT Year 2 / Second Semester ---
+      'it_sy2_eit0212', 'it_sy2_eit0221', 'it_sy2_eit0222', 'it_sy2_eit0222_1', 'it_sy2_ges0013',
+      'it_sy2_rph0004', 'it_sy2_uts0003', 'it_sy2_eit_elective2', 'it_sy2_ped0074',
+
+      // --- BSIT Year 3 / First Semester ---
+      'it_ty1_icc0335', 'it_ty1_icc0335_1', 'it_ty1_eit0311', 'it_ty1_eit0311_1', 'it_ty1_eit_elective3',
+      'it_ty1_eit0312', 'it_ty1_eit0312_1', 'it_ty1_lwr0009',
+      
+      // --- BSIT Year 3 / Second Semester ---
+      'it_ty2_eit0321', 'it_ty2_eit0321_1', 'it_ty2_eit0322', 'it_ty2_eit0322_1', 'it_ty2_eit0323',
+      'it_ty2_eit0323_1', 'it_ty2_eth0008',
+      
+      // --- BSIT Year 3 / Midyear/Summer Term ---
+      'it_my_cap0101', 'it_my_eit0331', 'it_my_eit0331_1',
+
+      // --- BSIT Year 4 / First Semester ---
+      'it_fy4_cap0102', 'it_fy4_eit_elective4', 'it_fy4_eit_elective5', 'it_fy4_eit_elective6',
+
+      // --- BSIT Year 4 / Second Semester ---
+      'it_fy4b_iip0101a', 'it_fy4b_iip0101_1',
+    ];
+  }
+
+  // --- BS COMPUTER SCIENCE ---
+  if (courseLower.includes('computer science')) {
+    return [
+      // --- BSCS Year 1 / First Semester ---
+      'cs_fy1_csc0102', 'cs_fy1_icc0101', 'cs_fy1_icc0101_1', 'cs_fy1_icc0102', 'cs_fy1_icc0102_1',
+      'cs_fy1_ipp0010', 'cs_fy1_mmw0001', 'cs_fy1_ped0001', 'cs_fy1_pcm0006', 'cs_fy1_sts0002', 'cs_fy1_nstp0001',
+
+      // --- BSCS Year 1 / Second Semester ---
+      'cs_fy2_csc0211', 'cs_fy2_csc0223', 'cs_fy2_icc0103', 'cs_fy2_icc0103_1', 'cs_fy2_icc0104',
+      'cs_fy2_icc0104_1', 'cs_fy2_lwr0009', 'cs_fy2_ped0012', 'cs_fy2_rph0004', 'cs_fy2_tcw0005', 'cs_fy2_nstp02',
+
+      // --- BSCS Year 2 / First Semester ---
+      'cs_sy1_csc0212', 'cs_sy1_csc0212_1', 'cs_sy1_csc0213', 'cs_sy1_csc0213_1', 'cs_sy1_csc0224',
+      'cs_sy1_eth0008', 'cs_sy1_icc0105', 'cs_sy1_icc0105_1', 'cs_sy1_ite0001', 'cs_sy1_ped0074', 'cs_sy1_uts0003',
+
+      // --- BSCS Year 2 / Second Semester ---
+      'cs_sy2_cbm0016', 'cs_sy2_csc0221', 'cs_sy2_csc0222', 'cs_sy2_csc0222_1', 'cs_sy2_csc0316',
+      'cs_sy2_ges0013', 'cs_sy2_icc0106', 'cs_sy2_icc0106_1', 'cs_sy2_ped0023', 'cs_sy2_aap0007',
+
+      // --- BSCS Year 3 / First Semester ---
+      'cs_ty1_csc0311', 'cs_ty1_csc0311_1', 'cs_ty1_csc0312', 'cs_ty1_csc0312_1',
+      'cs_ty1_csc0313', 'cs_ty1_csc0313_1', 'cs_ty1_csc0314', 'cs_ty1_csc0314_1',
+      'cs_ty1_csc0315', 'cs_ty1_csc0315_1',
+
+      // --- BSCS Year 3 / Second Semester ---
+      'cs_ty2_csc0321', 'cs_ty2_csc0321_1', 'cs_ty2_csc0322', 'cs_ty2_csc0322_1',
+      'cs_ty2_csc0323', 'cs_ty2_csc0323_1', 'cs_ty2_csc0324', 'cs_ty2_csc0324_1', 'cs_ty2_csc0325',
+
+      // --- BSCS Year 3 / Midyear/Summer Term ---
+      'cs_ty_csc195_1',
+
+      // --- BSCS Year 4 / First Semester ---
+      'cs_fy4_csc0411', 'cs_fy4_csc0412', 'cs_fy4_csc0412_1',
+      'cs_fy4_csc0413', 'cs_fy4_csc0413_1', 'cs_fy4_csc0414', 'cs_fy4_csc0414_1',
+
+      // --- BSCS Year 4 / Second Semester ---
+      'cs_fy4b_csc0421a', 'cs_fy4b_csc0422', 'cs_fy4b_csc0422_1',
+      'cs_fy4b_csc0423', 'cs_fy4b_csc0423_1', 'cs_fy4b_csc0424', 'cs_fy4b_csc0424_1',
+    ];
+  }
+
+  // --- Default ---
+  return [];
+};
 
 
 
@@ -428,49 +481,79 @@ const AnalysisPage = () => {
   const [prefill, setPrefill] = useState<number[]>([]);
   const handleGradesExtracted = (extractedGrades: unknown[]) => {
     console.log('[OCR] handling grades for prefill:', extractedGrades);
-    
+
     if (Array.isArray(extractedGrades) && extractedGrades.length > 0) {
       // Check if it's structured grade objects (new format)
       const firstGrade = extractedGrades[0];
       if (firstGrade && typeof firstGrade === 'object' && 'grade' in firstGrade) {
-        console.log('[OCR] Structured grades detected, converting to numeric array');
-        const numericGrades = extractedGrades.map(g => {
-          const grade = g as { grade: unknown };
-          return typeof grade.grade === 'string' || typeof grade.grade === 'number' 
-            ? parseFloat(String(grade.grade)) 
-            : 0;
-        });
-        setPrefill(numericGrades.map(n => parseFloat(Number(n).toFixed(2))));
-        
-        // Also populate the grades table with the structured data
-        const gradeRows = extractedGrades.map((g, index) => {
-          const gradeObj = g as { 
-            id?: unknown; 
-            subject?: unknown; 
-            courseCode?: unknown; 
-            units?: unknown; 
-            grade: unknown; 
-            semester?: unknown; 
+        console.log('[OCR] Structured grades detected, mapping to curriculum order');
+        const curriculumOrder = getCurriculumOrder(user.course);
+
+        // Map extracted grades to curriculum IDs in order
+        const gradeRows: GradeRow[] = extractedGrades.map((g, index) => {
+          const gradeObj = g as {
+            id?: unknown;
+            subject?: unknown;
+            courseCode?: unknown;
+            units?: unknown;
+            grade: unknown;
+            semester?: unknown;
           };
+
+          // Use curriculum ID if available, otherwise fallback to generic
+          const curriculumId = curriculumOrder[index] || `G-${index + 1}`;
+
           return {
-            id: typeof gradeObj.id === 'string' ? gradeObj.id : `G-${index + 1}`,
+            id: curriculumId,
             subject: typeof gradeObj.subject === 'string' ? gradeObj.subject : `Subject ${index + 1}`,
             courseCode: typeof gradeObj.courseCode === 'string' ? gradeObj.courseCode : '',
             units: typeof gradeObj.units === 'number' ? gradeObj.units : 3,
-            grade: typeof gradeObj.grade === 'string' || typeof gradeObj.grade === 'number' 
-              ? parseFloat(String(gradeObj.grade)) 
+            grade: typeof gradeObj.grade === 'string' || typeof gradeObj.grade === 'number'
+              ? parseFloat(String(gradeObj.grade))
               : 0,
             semester: typeof gradeObj.semester === 'string' ? gradeObj.semester : ''
           };
         });
+
+        // Set prefill array with grade values for dropdown initialization
+        const numericGrades = extractedGrades.map(g => {
+          const grade = g as { grade: unknown };
+          return typeof grade.grade === 'string' || typeof grade.grade === 'number'
+            ? parseFloat(String(grade.grade))
+            : 0;
+        });
+        setPrefill(numericGrades.map(n => parseFloat(Number(n).toFixed(2))));
+
+        // Populate the grades table with mapped curriculum data
         setGrades(gradeRows);
-        console.log('[OCR] Populated grades table with', gradeRows.length, 'courses');
-      } 
-      // Check if it's numeric array (old format)
+        console.log('[OCR] Populated grades table with', gradeRows.length, 'courses mapped to curriculum');
+      }
+      // Check if it's numeric array (current backend format)
       else if (extractedGrades.every(g => typeof g === 'number')) {
-        console.log('[OCR] Numeric grades detected');
-        setPrefill(extractedGrades.map(n => parseFloat(Number(n).toFixed(2))));
-        setGrades(normalizeToRows([])); // rows will be created by table change handlers upon prefill
+        console.log('[OCR] Numeric grades detected, mapping to curriculum order');
+        const curriculumOrder = getCurriculumOrder(user.course);
+        const numericGrades = extractedGrades as number[];
+
+        // Create grade rows mapped to curriculum order
+        const gradeRows: GradeRow[] = numericGrades.map((gradeValue, index) => {
+          const curriculumId = curriculumOrder[index] || `G-${index + 1}`;
+
+          return {
+            id: curriculumId,
+            subject: `Subject ${index + 1}`, // Placeholder subject
+            courseCode: '',
+            units: 3, // Default units
+            grade: parseFloat(gradeValue.toFixed(2)),
+            semester: '' // Placeholder semester
+          };
+        });
+
+        // Set prefill array for dropdown initialization
+        setPrefill(numericGrades.map(n => parseFloat(Number(n).toFixed(2))));
+
+        // Populate the grades table with mapped curriculum data
+        setGrades(gradeRows);
+        console.log('[OCR] Populated grades table with', gradeRows.length, 'courses mapped to curriculum');
       }
     }
     setShowGrades(true);

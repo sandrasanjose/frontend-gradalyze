@@ -154,7 +154,12 @@ const TranscriptUpload = ({
         <span className="ml-2 text-[11px] px-2 py-0.5 rounded bg-red-600 text-white">Required</span>
       </div>
 
-      <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className={`rounded-lg border p-4 transition-all ${
+        isDark  ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50' 
+                : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
+      }`}>
+        
+      
         {existingTranscript?.hasFile ? (
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
@@ -162,12 +167,14 @@ const TranscriptUpload = ({
                 <span className="text-gray-700 text-xs font-semibold">PDF</span>
               </div>
               <div>
-                <div className="text-white text-sm font-medium">{existingTranscript.fileName || 'transcript.pdf'}</div>
-                {tempTranscriptSizeKB && <div className="text-gray-300 text-xs">{tempTranscriptSizeKB} KB</div>}
+                <div className={`text-sm font-medium ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>{existingTranscript.fileName || 'transcript.pdf'}</div>
+                {tempTranscriptSizeKB && <div className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-xs`}>{tempTranscriptSizeKB} KB</div>}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={handleDeleteTranscript} className="px-2.5 py-1.5 rounded bg-red-700 hover:bg-red-600 text-sm">
+              <button onClick={handleDeleteTranscript} className={`inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 border border-red-500 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-400`}>
                 Remove
               </button>
             </div>
@@ -175,7 +182,7 @@ const TranscriptUpload = ({
         ) : (
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-300">Upload your transcript of records (PDF)</p>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-black'}`}>Upload your transcript of records (PDF)</p>
               <div>
                 <label htmlFor="upload-tor" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm cursor-pointer">
                   Upload Transcript

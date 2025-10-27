@@ -9,7 +9,29 @@ interface Props {
   prefillGrades?: number[];
   onEmitOrder?: (ids: string[]) => void;
 }
+
 const SCALE = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00'];
+
+// Theme-based styling constants for easier customization
+const TABLE_STYLES = {
+  table: "min-w-full text-sm text-left border border-gray-700 rounded-md",
+  thead: "bg-gray-900 text-gray-300",
+  cell: (isDark: boolean) => `px-3 py-2 border-b border-gray-700 ${
+    isDark ? 'text-white bg-[#1e2939]' : 'text-gray-900 bg-[#938872]'
+  }`,
+  row: (isDark: boolean, isAlternate: boolean) => isAlternate ? (
+    isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
+  ) : (
+    isDark ? 'bg-[#463f3f]' : 'bg-[#e7e2d8]'
+  ),
+  select: "bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right",
+  container: (isDark: boolean) => `rounded-lg border p-4 transition-colors ${
+    isDark
+      ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50' 
+      : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
+  }`,
+  headerText: (isDark: boolean) => `text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`
+};
 
 const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, onEmitOrder }: Props) => {
   const { isDark } = useTheme();
@@ -55,9 +77,13 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
   const [v_ped0054, set_ped0054] = useState('');
 
   // Second Year - 2nd Semester
+  const [v_eit0212, set_eit0212] = useState('');
   const [v_eit0221, set_eit0221] = useState('');
   const [v_eit0222, set_eit0222] = useState('');
   const [v_eit0222_1, set_eit0222_1] = useState('');
+  const [v_eit_elective2, set_eit_elective2] = useState('');
+  const [v_icc0105, set_icc0105] = useState('');
+  const [v_icc0105_1, set_icc0105_1] = useState('');
   const [v_ges0013, set_ges0013] = useState('');
   const [v_rph0004, set_rph0004] = useState('');
   const [v_uts0003, set_uts0003] = useState('');
@@ -143,23 +169,21 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
     if (ids.length > 0) onEmitOrder(ids);
   }, [onEmitOrder]);
 
+const cellClass = TABLE_STYLES.cell(isDark);
+
   return (
     <div ref={rootRef} className="space-y-6">
       {/* First Year - 1st Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>First Year - 1st Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>First Year - 1st Semester</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -301,20 +325,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* First Year - 2nd Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>First Year - 2nd Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>First Year - 2nd Semester</h4>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-              <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+              <thead className={TABLE_STYLES.thead}>
                 <tr>
-                  <th className="px-3 py-2 border-b border-gray-700 w-24">Course No.</th>
-                  <th className="px-3 py-2 border-b border-gray-700">Descriptive Title</th>
-                <th className="px-3 py-2 border-b border-gray-700 text-right w-20">Units</th>
-                <th className="px-3 py-2 border-b border-gray-700 text-right w-28">Grade</th>
+                  <th className={`${cellClass} w-24`}>Course No.</th>
+                  <th className={cellClass}>Descriptive Title</th>
+                  <th className={`${cellClass} text-right w-20`}>Units</th>
+                  <th className={`${cellClass} text-right w-28`}>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -480,20 +500,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
         </div>
 
       {/* Second Year - 1st Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Second Year - 1st Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Second Year - 1st Semester</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -635,23 +651,31 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* Second Year - 2nd Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Second Year - 2nd Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Second Year - 2nd Semester</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
+            <tr className={`${
+                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
+              }`}>
+                <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0212</td>
+                <td className="px-3 py-2 border-b border-gray-700">Platform Technology</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
+                  <select id="it_sy2_eit0212" value={v_eit0212} onChange={(e)=>change('it_sy2_eit0212','EIT 0212 Platform Technology','EIT 0212',3,'Second Year - 2nd Semester',e.target.value,set_eit0212)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
+                    <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </td>
+              </tr>
               <tr className={`${
                 isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
               }`}>
@@ -684,6 +708,42 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
                   <select id="it_sy2_eit0222_1" value={v_eit0222_1} onChange={(e)=>change('it_sy2_eit0222_1','EIT 0222.1 Networking 1 (Laboratory)','EIT 0222.1',1,'Second Year - 2nd Semester',e.target.value,set_eit0222_1)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
+                    <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </td>
+              </tr>
+              <tr className={`${
+                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
+              }`}>
+                <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 2</td>
+                <td className="px-3 py-2 border-b border-gray-700">Professional Elective 2</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
+                  <select id="it_sy2_eit_elective2" value={v_eit_elective2} onChange={(e)=>change('it_sy2_eit_elective2','EIT ELECTIVE 2 Professional Elective 2','EIT ELECTIVE 2',3,'Second Year - 2nd Semester',e.target.value,set_eit_elective2)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
+                    <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </td>
+              </tr>
+              <tr className={`${
+                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
+              }`}>
+                <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0105</td>
+                <td className="px-3 py-2 border-b border-gray-700">Information Management (Lecture)</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
+                  <select id="it_sy2_icc0105" value={v_icc0105} onChange={(e)=>change('it_sy2_icc0105','ICC 0105 Information Management (Lecture)','ICC 0105',3,'Second Year - 2nd Semester',e.target.value,set_icc0105)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
+                    <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </td>
+              </tr>
+              <tr className={`${
+                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
+              }`}>
+                <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0105_1</td>
+                <td className="px-3 py-2 border-b border-gray-700">Information Management (Laboratory)</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
+                  <select id="it_sy2_icc0105_1" value={v_icc0105_1} onChange={(e)=>change('it_sy2_icc0105_1','ICC 0105.1 Information Management (Laboratory)','ICC 0105.1',3,'Second Year - 2nd Semester',e.target.value,set_icc0105_1)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
                     <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
@@ -742,20 +802,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* Third Year - 1st Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Third Year - 1st Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Third Year - 1st Semester</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -861,20 +917,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* Third Year - 2nd Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Third Year - 2nd Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Third Year - 2nd Semester</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -968,20 +1020,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* MidYear Term */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Third Year - MidYear</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Third Year - MidYear</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -1027,20 +1075,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* Fourth Year - 1st Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-      isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Fourth Year - 1st Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Fourth Year - 1st Semester</h4>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-            <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+            <thead className={TABLE_STYLES.thead}>
               <tr>
-                <th className={`px-3 py-2 border-b border-gray-700 w-24 ${isDark ? 'text-white' : 'text-gray-900'}`}>Course No.</th>
-                <th className={`px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white' : 'text-gray-900'}`}>Descriptive Title</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>Units</th>
-                <th className={`px-3 py-2 border-b border-gray-700 text-right w-28 ${isDark ? 'text-white' : 'text-gray-900'}`}>Grade</th>
+                <th className={`${cellClass} w-24`}>Course No.</th>
+                <th className={cellClass}>Descriptive Title</th>
+                <th className={`${cellClass} text-right w-20`}>Units</th>
+                <th className={`${cellClass} text-right w-28`}>Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -1098,20 +1142,16 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
       </div>
 
       {/* Fourth Year - 2nd Semester */}
-      <div className={`rounded-lg border p-4 transition-colors ${
-        isDark
-        ? 'bg-[#2a2f38] border-gray-700'
-        : 'bg-[#f5f6f7] border-[#DACAA2]'
-      }`}>
-        <h4 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Fourth Year - 2nd Semester</h4>
+      <div className={TABLE_STYLES.container(isDark)}>
+        <h4 className={TABLE_STYLES.headerText(isDark)}>Fourth Year - 2nd Semester</h4>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left border border-gray-700 rounded-md">
-              <thead className="bg-gray-900 text-gray-300">
+<table className={TABLE_STYLES.table}>
+              <thead className={TABLE_STYLES.thead}>
                 <tr>
-                  <th className="px-3 py-2 border-b border-gray-700 w-24">Course No.</th>
-                  <th className="px-3 py-2 border-b border-gray-700">Descriptive Title</th>
-                <th className="px-3 py-2 border-b border-gray-700 text-right w-20">Units</th>
-                <th className="px-3 py-2 border-b border-gray-700 text-right w-28">Grade</th>
+                  <th className={`${cellClass} w-24`}>Course No.</th>
+                  <th className={cellClass}>Descriptive Title</th>
+                  <th className={`${cellClass} text-right w-20`}>Units</th>
+                  <th className={`${cellClass} text-right w-28`}>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -1148,5 +1188,3 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
 };
 
 export default ITStaticTable;
-
-
