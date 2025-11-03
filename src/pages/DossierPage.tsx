@@ -150,12 +150,28 @@ const DossierPage = () => {
       if (data.tor_notes) {
         try {
           const parsed = JSON.parse(data.tor_notes);
-          // grades prefill omitted on dossier
+          // careers
           const cf = parsed?.analysis_results?.career_forecast;
           if (cf && typeof cf === 'object') setCareerForecast(cf);
+
+          // archetypes: prefer backend normalized if present
+          const arch = parsed?.analysis_results?.archetype_analysis;
+          const norm = arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
+          if (norm && typeof norm === 'object') {
+            // Map to lowercase keys expected by AnalysisResults
+            const map: any = {};
+            const pull = (k: string) => (typeof norm[k] === 'number' ? norm[k] : (typeof norm[k?.toLowerCase?.()] === 'number' ? norm[k.toLowerCase()] : undefined));
+            map.realistic = pull('Realistic');
+            map.investigative = pull('Investigative');
+            map.artistic = pull('Artistic');
+            map.social = pull('Social');
+            map.enterprising = pull('Enterprising');
+            map.conventional = pull('Conventional');
+            setArchetypePercents(map);
+          }
         } catch (error) {
-        console.error('Error:', error);
-      }
+          console.error('Error:', error);
+        }
       }
 
       setUser((prev) => ({
@@ -167,13 +183,18 @@ const DossierPage = () => {
       }));
 
       setPrimaryArchetype(String(data.primary_archetype || ''));
-      setArchetypePercents({
-        realistic: typeof data.archetype_realistic_percentage === 'number' ? data.archetype_realistic_percentage : undefined,
-        investigative: typeof data.archetype_investigative_percentage === 'number' ? data.archetype_investigative_percentage : undefined,
-        artistic: typeof data.archetype_artistic_percentage === 'number' ? data.archetype_artistic_percentage : undefined,
-        social: typeof data.archetype_social_percentage === 'number' ? data.archetype_social_percentage : undefined,
-        enterprising: typeof data.archetype_enterprising_percentage === 'number' ? data.archetype_enterprising_percentage : undefined,
-        conventional: typeof data.archetype_conventional_percentage === 'number' ? data.archetype_conventional_percentage : undefined,
+      // Only set fallback raw columns if we did not already set from tor_notes normalized above
+      setArchetypePercents((prev) => {
+        const already = Object.values(prev || {}).some((v) => typeof v === 'number');
+        if (already) return prev;
+        return {
+          realistic: typeof data.archetype_realistic_percentage === 'number' ? data.archetype_realistic_percentage : undefined,
+          investigative: typeof data.archetype_investigative_percentage === 'number' ? data.archetype_investigative_percentage : undefined,
+          artistic: typeof data.archetype_artistic_percentage === 'number' ? data.archetype_artistic_percentage : undefined,
+          social: typeof data.archetype_social_percentage === 'number' ? data.archetype_social_percentage : undefined,
+          enterprising: typeof data.archetype_enterprising_percentage === 'number' ? data.archetype_enterprising_percentage : undefined,
+          conventional: typeof data.archetype_conventional_percentage === 'number' ? data.archetype_conventional_percentage : undefined,
+        };
       });
 
       let setForecast = false;
@@ -303,6 +324,22 @@ const DossierPage = () => {
           filter: none !important;
           text-shadow: none !important;
         }
+        /* Align icon with text in the red callout (Recommended Career Path) */
+        .pdf-light .flex.items-center.gap-2.mb-1 { display: flex !important; align-items: center !important; line-height: 1.2 !important; }
+        .pdf-light .flex.items-center.gap-2.mb-1 > svg { width: 14px !important; height: 14px !important; display: block !important; }
+        .pdf-light .flex.items-center.gap-2.mb-1 > span { display: inline-flex !important; align-items: center !important; line-height: 1.2 !important; padding-bottom: 1px !important; }
+
+        /* Hide the icon in the callout when exporting to PDF */
+        .pdf-light .flex.items-center.gap-2.mb-1 > svg { display: none !important; }
+
+        /* Make the callout label bold in PDF */
+        .pdf-light .border-red-200 .text-sm.font-medium,
+        .pdf-light .border-red-700 .text-sm.font-medium { font-weight: 700 !important; }
+
+        /* Make donut center texts bigger for PDF */
+        .pdf-light svg text[data-center="pct"] { font-size: 34px !important; font-weight: 800 !important; }
+        .pdf-light svg text[data-center="title"] { font-size: 14px !important; font-weight: 600 !important; }
+        .pdf-light svg text[data-center="label"] { font-size: 10px !important; letter-spacing: 0.08em !important; }
       `;
 
       const header = document.createElement('div');

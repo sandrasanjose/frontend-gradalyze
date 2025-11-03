@@ -109,6 +109,25 @@ const AnalysisPage = () => {
           }
           const cf = parsed?.analysis_results?.career_forecast;
           if (cf && typeof cf === 'object') setCareerForecast(cf);
+          // Prefer backend normalized archetype percentages if available
+          const arch = parsed?.analysis_results?.archetype_analysis;
+          const norm = arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
+          if (norm && typeof norm === 'object') {
+            const toNum = (v: unknown): number => {
+              const n = Number(v); return Number.isFinite(n) ? n : 0;
+            };
+            setArchetypePercents({
+              realistic: toNum((norm as any).Realistic ?? (norm as any).realistic),
+              investigative: toNum((norm as any).Investigative ?? (norm as any).investigative),
+              artistic: toNum((norm as any).Artistic ?? (norm as any).artistic),
+              social: toNum((norm as any).Social ?? (norm as any).social),
+              enterprising: toNum((norm as any).Enterprising ?? (norm as any).enterprising),
+              conventional: toNum((norm as any).Conventional ?? (norm as any).conventional),
+            });
+            if (typeof arch?.primary_archetype === 'string') {
+              setPrimaryArchetype(arch.primary_archetype);
+            }
+          }
         } catch (error) {
         console.error('Error:', error);
       }
@@ -212,15 +231,19 @@ const AnalysisPage = () => {
         student_number: String(data?.student_number || prev.student_number || ''),
       }));
 
-      // Capture archetype percentages for summary
+      // Capture archetype percentages for summary (fallback to denormalized columns if tor_notes didn't set it)
       setPrimaryArchetype(String(data.primary_archetype || ''));
-      setArchetypePercents({
-        realistic: data.archetype_realistic_percentage != null && !Number.isNaN(Number(data.archetype_realistic_percentage)) ? Number(data.archetype_realistic_percentage) : undefined,
-        investigative: data.archetype_investigative_percentage != null && !Number.isNaN(Number(data.archetype_investigative_percentage)) ? Number(data.archetype_investigative_percentage) : undefined,
-        artistic: data.archetype_artistic_percentage != null && !Number.isNaN(Number(data.archetype_artistic_percentage)) ? Number(data.archetype_artistic_percentage) : undefined,
-        social: data.archetype_social_percentage != null && !Number.isNaN(Number(data.archetype_social_percentage)) ? Number(data.archetype_social_percentage) : undefined,
-        enterprising: data.archetype_enterprising_percentage != null && !Number.isNaN(Number(data.archetype_enterprising_percentage)) ? Number(data.archetype_enterprising_percentage) : undefined,
-        conventional: data.archetype_conventional_percentage != null && !Number.isNaN(Number(data.archetype_conventional_percentage)) ? Number(data.archetype_conventional_percentage) : undefined,
+      setArchetypePercents(prev => {
+        const already = Object.values(prev || {}).some(v => typeof v === 'number');
+        if (already) return prev;
+        return {
+          realistic: data.archetype_realistic_percentage != null && !Number.isNaN(Number(data.archetype_realistic_percentage)) ? Number(data.archetype_realistic_percentage) : undefined,
+          investigative: data.archetype_investigative_percentage != null && !Number.isNaN(Number(data.archetype_investigative_percentage)) ? Number(data.archetype_investigative_percentage) : undefined,
+          artistic: data.archetype_artistic_percentage != null && !Number.isNaN(Number(data.archetype_artistic_percentage)) ? Number(data.archetype_artistic_percentage) : undefined,
+          social: data.archetype_social_percentage != null && !Number.isNaN(Number(data.archetype_social_percentage)) ? Number(data.archetype_social_percentage) : undefined,
+          enterprising: data.archetype_enterprising_percentage != null && !Number.isNaN(Number(data.archetype_enterprising_percentage)) ? Number(data.archetype_enterprising_percentage) : undefined,
+          conventional: data.archetype_conventional_percentage != null && !Number.isNaN(Number(data.archetype_conventional_percentage)) ? Number(data.archetype_conventional_percentage) : undefined,
+        };
       });
 
       let setForecast = false;
@@ -719,8 +742,11 @@ const AnalysisPage = () => {
         if (archetypeData.primary_archetype) {
           setPrimaryArchetype(archetypeData.primary_archetype);
         }
-        if (archetypeData.archetype_percentages) {
-          const p = archetypeData.archetype_percentages as Record<string, unknown>;
+        // Prefer normalized outputs from backend
+        const p = (archetypeData.opportunity_normalized_percentages
+          || archetypeData.normalized_percentages
+          || archetypeData.archetype_percentages) as Record<string, unknown> | undefined;
+        if (p) {
           const toNum = (v: unknown): number => {
             const n = Number(v);
             return Number.isFinite(n) ? n : 0;

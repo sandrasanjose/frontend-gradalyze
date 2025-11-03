@@ -238,9 +238,9 @@ const AnalysisResults = ({
                       {/* Inner circle */}
                       <circle cx={cx} cy={cy} r={r - stroke/2 + 2} fill={isDark ? '#1f2937' : '#ffffff'} />
                       {/* Center text */}
-                      <text x={cx} y={cy - 6} textAnchor="middle" className="font-extrabold" fill={isDark ? '#ffffff' : '#111827'} style={{fontSize:'28px'}}>{(Number(chosenPct)||0).toFixed(1)}%</text>
-                      <text x={cx} y={cy + 16} textAnchor="middle" fill={chosenColor} style={{fontSize:'12px', fontWeight:600}}>{chosenTitle || 'Primary Profile'}</text>
-                      <text x={cx} y={cy + 32} textAnchor="middle" fill={isDark ? '#d1d5db' : '#6b7280'} style={{fontSize:'9px', letterSpacing:'0.08em'}}>
+                      <text data-center="pct" x={cx} y={cy - 6} textAnchor="middle" className="font-extrabold" fill={isDark ? '#ffffff' : '#111827'} style={{fontSize:'28px'}}>{(Number(chosenPct)||0).toFixed(1)}%</text>
+                      <text data-center="title" x={cx} y={cy + 16} textAnchor="middle" fill={chosenColor} style={{fontSize:'12px', fontWeight:600}}>{chosenTitle || 'Primary Profile'}</text>
+                      <text data-center="label" x={cx} y={cy + 32} textAnchor="middle" fill={isDark ? '#d1d5db' : '#6b7280'} style={{fontSize:'9px', letterSpacing:'0.08em'}}>
                         PRIMARY PROFILE
                       </text>
                     </svg>

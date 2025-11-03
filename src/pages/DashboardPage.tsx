@@ -81,6 +81,45 @@ const DashboardPage = () => {
                                 data.archetype_conventional_percentage;
         
         if (hasArchetypeData) {
+          // Prefer normalized percentages from tor_notes if available
+          try {
+            if (data.tor_notes) {
+              const parsed = JSON.parse(data.tor_notes);
+              const arch = parsed?.analysis_results?.archetype_analysis;
+              const pref = arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
+              if (pref && typeof pref === 'object') {
+                const toNum = (v: unknown): number => {
+                  const n = Number(v); return Number.isFinite(n) ? n : 0;
+                };
+                // Determine primary from backend if present
+                let primaryArchetype = data.primary_archetype || arch?.primary_archetype;
+                if (!primaryArchetype) {
+                  const arr = [
+                    { n: 'Realistic', v: toNum((pref as any).Realistic ?? (pref as any).realistic) },
+                    { n: 'Investigative', v: toNum((pref as any).Investigative ?? (pref as any).investigative) },
+                    { n: 'Artistic', v: toNum((pref as any).Artistic ?? (pref as any).artistic) },
+                    { n: 'Social', v: toNum((pref as any).Social ?? (pref as any).social) },
+                    { n: 'Enterprising', v: toNum((pref as any).Enterprising ?? (pref as any).enterprising) },
+                    { n: 'Conventional', v: toNum((pref as any).Conventional ?? (pref as any).conventional) },
+                  ];
+                  primaryArchetype = arr.sort((a,b)=>b.v-a.v)[0]?.n;
+                }
+                const friendlyPrimary = toFriendlyArchetype(primaryArchetype);
+                setUserArchetype({
+                  primary: friendlyPrimary,
+                  analyzedAt: data.archetype_analyzed_at,
+                  hasAnalysis: true,
+                  archetype_realistic_percentage: toNum((pref as any).Realistic ?? (pref as any).realistic),
+                  archetype_investigative_percentage: toNum((pref as any).Investigative ?? (pref as any).investigative),
+                  archetype_artistic_percentage: toNum((pref as any).Artistic ?? (pref as any).artistic),
+                  archetype_social_percentage: toNum((pref as any).Social ?? (pref as any).social),
+                  archetype_enterprising_percentage: toNum((pref as any).Enterprising ?? (pref as any).enterprising),
+                  archetype_conventional_percentage: toNum((pref as any).Conventional ?? (pref as any).conventional),
+                });
+                return; // avoid fallback below
+              }
+            }
+          } catch {}
           // Determine primary archetype from percentages if not set
           let primaryArchetype = data.primary_archetype;
           if (!primaryArchetype) {
@@ -596,6 +635,11 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Methodology note */}
+        <p className={`text-xs -mt-2 mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          Percentages reflect fairness-normalized values when available (adjusted for curriculum axis prevalence).
+        </p>
 
         {/* All Archetypes Toggle */}
         <div className="flex flex-col items-center w-full">
