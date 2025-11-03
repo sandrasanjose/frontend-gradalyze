@@ -219,13 +219,18 @@ const DossierPage = () => {
   // Removed saved grades/prefill logic
 
   const handleGeneratePDF = async () => {
+    let wrapper: HTMLDivElement | null = null;
     try {
       setIsGeneratingPDF(true);
       const content = document.getElementById('dossier-content');
-      if (!content) return;
+      if (!content) {
+        console.error('PDF export: #dossier-content not found');
+        alert('Unable to export: content not found. Please reload the page and try again.');
+        return;
+      }
 
       // Build a light (white) theme wrapper for export
-      const wrapper = document.createElement('div');
+      wrapper = document.createElement('div');
       wrapper.className = 'pdf-light';
       wrapper.style.padding = '6px';
       wrapper.style.background = '#ffffff';
@@ -239,17 +244,19 @@ const DossierPage = () => {
       const style = document.createElement('style');
       style.innerHTML = `
         .pdf-light { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; font-size:10pt; line-height:1.35; }
-        .pdf-light * { background: transparent !important; font-size:10pt !important; line-height:1.35 !important; }
+        .pdf-light * { background: transparent !important; font-size:10pt !important; line-height:1.35 !important; -webkit-background-clip: initial !important; background-clip: initial !important; -webkit-text-fill-color: #111827 !important; }
         .pdf-light .bg-gray-900, .pdf-light .bg-gray-800, .pdf-light .bg-gray-700, .pdf-light .bg-black { background-color: #ffffff !important; }
         .pdf-light .text-white, .pdf-light .text-gray-200, .pdf-light .text-gray-300, .pdf-light .text-gray-400 { color: #111827 !important; }
         .pdf-light .border-gray-800, .pdf-light .border-gray-700, .pdf-light .border-gray-600 { border-color: #cbd5e1 !important; }
-        .pdf-light .rounded-lg, .pdf-light .rounded-md { box-shadow: none; border: 2px solid #cbd5e1; background-color: #ffffff !important; padding: 8px !important; border-radius: 6px !important; }
+        /* Normalize cards: subtle border, light padding, no shadows */
+        .pdf-light .rounded-lg, .pdf-light .rounded-md { box-shadow: none; border: 1px solid #e5e7eb !important; background-color: #ffffff !important; padding: 10px !important; border-radius: 6px !important; }
         .pdf-light .mb-2 { margin-bottom: 6px !important; }
         .pdf-light .mb-3, .pdf-light .mb-4 { margin-bottom: 8px !important; }
         .pdf-light .mb-6, .pdf-light .mb-8 { margin-bottom: 10px !important; }
-        .pdf-light .p-6, .pdf-light .p-8 { padding: 8px !important; }
+        .pdf-light .p-6, .pdf-light .p-8 { padding: 10px !important; }
         .pdf-light .px-4, .pdf-light .px-6, .pdf-light .px-8 { padding-left: 8px !important; padding-right: 8px !important; }
         .pdf-light .py-4, .pdf-light .py-6, .pdf-light .py-8 { padding-top: 8px !important; padding-bottom: 8px !important; }
+        /* Default heading sizes to keep charts unchanged */
         .pdf-light h1, .pdf-light h2, .pdf-light h3 { color: #111827 !important; margin: 0 0 6px 0; }
         .pdf-light h1 { font-size: 12pt !important; }
         .pdf-light h2 { font-size: 11pt !important; }
@@ -257,22 +264,53 @@ const DossierPage = () => {
         .pdf-light .text-green-400, .pdf-light .text-blue-400, .pdf-light .text-purple-400 { color: #0f172a !important; }
         .pdf-light .bg-gradient-to-r, .pdf-light .bg-gradient-to-br { background-image: none !important; background-color: #ffffff !important; }
         .pdf-light .progress-bar { background-color: #2563eb !important; }
-        .pdf-light p { font-size: 10pt !important; }
-        /* Force Tailwind text-* utilities to 10pt for PDFs */
+        /* Default paragraph/text size */
+        .pdf-light p { font-size: 10pt !important; line-height: 1.35 !important; }
         .pdf-light .text-xs, .pdf-light .text-sm, .pdf-light .text-base, .pdf-light .text-lg, .pdf-light .text-xl, .pdf-light .text-2xl, .pdf-light .text-3xl, .pdf-light .text-4xl, .pdf-light .text-5xl, .pdf-light .text-6xl { font-size: 10pt !important; }
-        /* Shrink progress bars for print */
+        /* Larger text only for summaries */
+        .pdf-light .exec-summary h3, .pdf-light .prof-summary h3 { font-size: 12pt !important; margin-bottom: 10px !important; }
+        .pdf-light .exec-summary p, .pdf-light .prof-summary p { font-size: 11pt !important; line-height: 1.45 !important; }
         .pdf-light .h-2 { height: 4px !important; }
+        /* Force simple hex colors everywhere to avoid unsupported oklch parsing */
+        .pdf-light, .pdf-light * { color: #111827 !important; background-color: #ffffff !important; border-color: #cbd5e1 !important; background-image: none !important; }
+        /* Ensure section spacing between Executive Summary, Charts, and Professional Summary */
+        .pdf-light #dossier-content > * { margin-bottom: 20px !important; }
+        /* Add distance between headers and their divider lines */
+        .pdf-light .border-t { margin-top: 6px !important; margin-bottom: 12px !important; border-color: #cbd5e1 !important; }
+        /* Add a bit of space before boxes following section headers */
+        .pdf-light .rounded-lg, .pdf-light .rounded-md { margin-top: 10px !important; }
+        /* Constrain card heights so columns are not overly tall in PDF */
+        .pdf-light .rounded-lg, .pdf-light .rounded-md { max-height: 440px !important; overflow: hidden !important; }
+        /* Slightly scale down large visuals (e.g., donut SVG container) */
+        .pdf-light .relative.mx-auto { transform: scale(0.9); transform-origin: center center; margin-bottom: -6px !important; }
+        /* Tighten vertical gaps in the donut/legend stack */
+        .pdf-light .flex.flex-col.items-center { gap: 6px !important; }
+        /* Reduce generic top margins that may push legend downward */
+        .pdf-light .mt-4 { margin-top: 6px !important; }
+        .pdf-light .mt-6 { margin-top: 8px !important; }
+        /* Compact grid gaps slightly to avoid overflow */
+        .pdf-light .grid { gap: 10px !important; }
+        /* Force header to pure black with no gradient or blending */
+        .pdf-light .pdf-header, .pdf-light .pdf-header * {
+          color: #000000 !important;
+          -webkit-text-fill-color: #000000 !important;
+          background: none !important;
+          background-image: none !important;
+          -webkit-background-clip: initial !important;
+          background-clip: initial !important;
+          opacity: 1 !important;
+          mix-blend-mode: normal !important;
+          filter: none !important;
+          text-shadow: none !important;
+        }
       `;
 
       const header = document.createElement('div');
       header.style.marginBottom = '12px';
-      header.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-end;color:#111827">
-        <div>
-          <div style="font-size:20px;font-weight:700;">${user.name || 'Student'}</div>
-          <div style="font-size:12px;opacity:0.8;">${user.course || ''}</div>
-          <div style="font-size:12px;opacity:0.8;">Pamantasan ng Lungsod ng Maynila</div>
-        </div>
-        <div style="font-size:12px;opacity:0.7;">${new Date().toLocaleDateString()}</div>
+      header.innerHTML = `<div class="pdf-header" style="text-align:center;color:#000000">
+        <div style=\"font-size:20px;font-weight:700;color:#000000;\">${user.name || 'Student'}</div>
+        <div style=\"font-size:12px;opacity:0.95;color:#000000;\">${user.course || ''}</div>
+        <div style=\"font-size:12px;opacity:0.95;color:#000000;\">Pamantasan ng Lungsod ng Maynila</div>
       </div>`;
 
       const cloned = content.cloneNode(true) as HTMLElement;
@@ -285,13 +323,19 @@ const DossierPage = () => {
       wrapper.style.top = '0';
       document.body.appendChild(wrapper);
 
-      // Render to canvas and fit to one A4 page
-      const canvas = await html2canvas(wrapper, { 
-        background: '#ffffff', 
+      // Wait a tick to allow fonts/assets to settle
+      await new Promise((r) => setTimeout(r, 50));
+
+      // Render to canvas and fit to one A4 page (higher-resolution capture)
+      const canvas = await (html2canvas as any)(wrapper, {
+        background: '#ffffff',
         useCORS: true,
+        allowTaint: false,
+        scale: 2,
         width: 794,
-        height: 1123
+        height: 1123,
       });
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -307,9 +351,13 @@ const DossierPage = () => {
       const offsetY = (pageHeight - finalH) / 2;
       pdf.addImage(imgData, 'PNG', offsetX, offsetY, finalW, finalH);
       pdf.save('Professional_Dossier.pdf');
-      // Cleanup appended wrapper
-      document.body.removeChild(wrapper);
+    } catch (e) {
+      console.error('PDF export failed:', e);
+      alert('PDF download failed. Please check the console for details and try again.');
     } finally {
+      if (wrapper && wrapper.parentNode) {
+        try { wrapper.parentNode.removeChild(wrapper); } catch {}
+      }
       setIsGeneratingPDF(false);
     }
   };
@@ -490,7 +538,7 @@ const DossierPage = () => {
           ) : (
             <div id="dossier-content" className="space-y-8">
             {/* Executive Summary (plain text) */}
-              <div className="mb-2">
+              <div className="mb-2 exec-summary">
                 <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Executive Summary</h3>
                 <div className={`border-t ${isDark ? 'border-gray-700' : 'border-[#DACAO2]'} mb-3`} />
                 <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -509,7 +557,7 @@ const DossierPage = () => {
               />
 
               {/*Professional Summary*/}
-              <div className="mb-2">
+              <div className="mb-2 prof-summary">
                 <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Professional Summary</h3>
                 <div className={`border-t ${isDark ? 'border-gray-700' : 'border-[#DACAO2]'} mb-3`} />
                 {(() => {
