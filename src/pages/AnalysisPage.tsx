@@ -62,6 +62,7 @@ const AnalysisPage = () => {
   const [showGrades, setShowGrades] = useState(false);
   const [itOrderIds, setItOrderIds] = useState<string[] | null>(null);
   const [savedGradesCache, setSavedGradesCache] = useState<GradeRow[] | null>(null);
+  const [tableResetKey, setTableResetKey] = useState<number>(0);
 
   // Track created blob URLs to revoke later
   const [blobUrls, setBlobUrls] = useState<string[]>([]);
@@ -214,12 +215,12 @@ const AnalysisPage = () => {
       // Capture archetype percentages for summary
       setPrimaryArchetype(String(data.primary_archetype || ''));
       setArchetypePercents({
-        realistic: typeof data.archetype_realistic_percentage === 'number' ? data.archetype_realistic_percentage : undefined,
-        investigative: typeof data.archetype_investigative_percentage === 'number' ? data.archetype_investigative_percentage : undefined,
-        artistic: typeof data.archetype_artistic_percentage === 'number' ? data.archetype_artistic_percentage : undefined,
-        social: typeof data.archetype_social_percentage === 'number' ? data.archetype_social_percentage : undefined,
-        enterprising: typeof data.archetype_enterprising_percentage === 'number' ? data.archetype_enterprising_percentage : undefined,
-        conventional: typeof data.archetype_conventional_percentage === 'number' ? data.archetype_conventional_percentage : undefined,
+        realistic: data.archetype_realistic_percentage != null && !Number.isNaN(Number(data.archetype_realistic_percentage)) ? Number(data.archetype_realistic_percentage) : undefined,
+        investigative: data.archetype_investigative_percentage != null && !Number.isNaN(Number(data.archetype_investigative_percentage)) ? Number(data.archetype_investigative_percentage) : undefined,
+        artistic: data.archetype_artistic_percentage != null && !Number.isNaN(Number(data.archetype_artistic_percentage)) ? Number(data.archetype_artistic_percentage) : undefined,
+        social: data.archetype_social_percentage != null && !Number.isNaN(Number(data.archetype_social_percentage)) ? Number(data.archetype_social_percentage) : undefined,
+        enterprising: data.archetype_enterprising_percentage != null && !Number.isNaN(Number(data.archetype_enterprising_percentage)) ? Number(data.archetype_enterprising_percentage) : undefined,
+        conventional: data.archetype_conventional_percentage != null && !Number.isNaN(Number(data.archetype_conventional_percentage)) ? Number(data.archetype_conventional_percentage) : undefined,
       });
 
       let setForecast = false;
@@ -466,13 +467,41 @@ const AnalysisPage = () => {
     }
   }, [user?.id]);
 
-  // When table order is known and we have cached grades, prefill the selects
+  // When table order is known and we have cached grades, remap them to canonical IDs and prefill
   useEffect(() => {
     if (!savedGradesCache || !itOrderIds || itOrderIds.length === 0) return;
-    const arr = extractGradeValuesInOrder(savedGradesCache, user.course);
+    // Build a grades array by aligning saved items to the emitted order by index.
+    // This migrates older saves that used non-curriculum IDs.
+    const max = Math.min(itOrderIds.length, savedGradesCache.length);
+    const remapped: GradeRow[] = [];
+    for (let i = 0; i < max; i++) {
+      const src = savedGradesCache[i];
+      const id = itOrderIds[i];
+      const gradeNum = parseFloat(Number(src?.grade ?? 0).toFixed(2));
+      remapped.push({
+        id,
+        subject: src?.subject || `Subject ${i + 1}`,
+        courseCode: src?.courseCode || '',
+        units: typeof src?.units === 'number' && isFinite(src.units) ? src.units : 3,
+        grade: gradeNum,
+        semester: src?.semester || ''
+      });
+    }
+
+    // Prefill dropdowns and set table rows
+    const arr = remapped.map(r => r.grade);
     setPrefill(arr.map(n => parseFloat(Number(n).toFixed(2))));
-    // Also reflect rows state so analysis/persistence functions have data
-    setGrades(savedGradesCache);
+    setGrades(remapped);
+
+    // Persist the migrated rows once so future loads use canonical IDs
+    try {
+      if (user.id && remapped.length > 0) {
+        void gradesService.updateUserGrades(user.id, remapped);
+      }
+    } catch (e) {
+      console.warn('Failed to persist migrated grades', e);
+    }
+
     // apply once
     setSavedGradesCache(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -563,6 +592,21 @@ const AnalysisPage = () => {
 
   const handleBlobUrlAdd = (url: string) => {
     setBlobUrls(prev => [...prev, url]);
+  };
+
+  const resetGradesTable = async () => {
+    if (isProcessing) return;
+    try {
+      setGrades([]);
+      setPrefill([]);
+      setSavedGradesCache(null);
+      setTableResetKey((k) => k + 1); // force remount of the static table to clear internal select state
+      if (user.id) {
+        await gradesService.updateUserGrades(user.id, []);
+      }
+    } catch (e) {
+      console.warn('Failed to reset grades table', e);
+    }
   };
 
   const validateAndProcess = async () => {
@@ -676,17 +720,27 @@ const AnalysisPage = () => {
           setPrimaryArchetype(archetypeData.primary_archetype);
         }
         if (archetypeData.archetype_percentages) {
-          setArchetypePercents(archetypeData.archetype_percentages);
+          const p = archetypeData.archetype_percentages as Record<string, unknown>;
+          const toNum = (v: unknown): number => {
+            const n = Number(v);
+            return Number.isFinite(n) ? n : 0;
+          };
+          const normalized = {
+            realistic: toNum((p as any).realistic ?? (p as any).Realistic),
+            investigative: toNum((p as any).investigative ?? (p as any).Investigative),
+            artistic: toNum((p as any).artistic ?? (p as any).Artistic),
+            social: toNum((p as any).social ?? (p as any).Social),
+            enterprising: toNum((p as any).enterprising ?? (p as any).Enterprising),
+            conventional: toNum((p as any).conventional ?? (p as any).Conventional),
+          };
+          setArchetypePercents(normalized);
         }
         console.log('Updated archetype data:', archetypeData);
       }
       
       // Skip Objective 3 here; Dashboard will trigger recommendations when needed
       
-      // Refresh profile to get updated data (including top jobs)
-      await fetchProfile(user.email);
-      
-      // No modal alerts; UI is updated inline via state and profile refresh
+      // No modal alerts; UI is updated inline via state
       
     } catch (e: unknown) {
       console.error('Processing error:', e);
@@ -922,23 +976,31 @@ const AnalysisPage = () => {
                 // parseOcrText prop removed - just console log
               />
 
-              {/* Program Table Toggle */}
-              <div className="mt-2">
-              <button 
-                    onClick={() => setShowGrades(!showGrades)}
-                    disabled={isProcessing}
-                    className={`px-3 py-2 rounded-md text-sm ${isProcessing ? (isDark ? 'bg-gray-600 text-gray-300' : 'bg-gray-400 text-gray-600') : (isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800')}`}
-                  >
-                    {showGrades ? 'Hide Program Table' : 'Show Program Table'}
-              </button>
-            </div>
+              {/* Program Table Controls */}
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <button 
+                  onClick={() => setShowGrades(!showGrades)}
+                  disabled={isProcessing}
+                  className={`px-3 py-2 rounded-md text-sm ${isProcessing ? (isDark ? 'bg-gray-600 text-gray-300' : 'bg-gray-400 text-gray-600') : (isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800')}`}
+                >
+                  {showGrades ? 'Hide Program Table' : 'Show Program Table'}
+                </button>
+                <button
+                  onClick={resetGradesTable}
+                  disabled={isProcessing}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 border border-red-500 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  title="Reset grades table"
+              >
+                  Reset Table
+                </button>
+              </div>
 
               {/* Grades Table */}
                 {showGrades && (
                 ((user.course || '').toLowerCase().includes('information technology')) ? (
-                  <ITStaticTable grades={grades} onGradesChange={setGrades} isProcessing={isProcessing} prefillGrades={prefill} onEmitOrder={setItOrderIds} />
+                  <ITStaticTable key={tableResetKey} grades={grades} onGradesChange={setGrades} isProcessing={isProcessing} prefillGrades={prefill} onEmitOrder={setItOrderIds} />
                 ) : ((user.course || '').toLowerCase().includes('computer science')) ? (
-                  <CStaticTable grades={grades} onGradesChange={setGrades} isProcessing={isProcessing} prefillGrades={prefill} onEmitOrder={setItOrderIds} />
+                  <CStaticTable key={tableResetKey} curriculum="BSCS" grades={grades} onGradesChange={setGrades} isProcessing={isProcessing} prefillGrades={prefill} onEmitOrder={setItOrderIds} />
                 ) : (
                   <div className={`rounded-lg border p-6 text-center ${
                     isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-[#DACAO2]'

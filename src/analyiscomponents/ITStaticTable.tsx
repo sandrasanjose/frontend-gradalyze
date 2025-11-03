@@ -14,7 +14,7 @@ const SCALE = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00'];
 
 // Theme-based styling constants for easier customization
 const TABLE_STYLES = {
-  table: "min-w-full text-sm text-left border border-gray-700 rounded-md",
+  table: "min-w-full text-sm text-left border border-gray-700 rounded-md divide-y divide-gray-700",
   thead: "bg-gray-900 text-gray-300",
   cell: (isDark: boolean) => `px-3 py-2 border-b border-gray-700 ${
     isDark ? 'text-white bg-[#1e2939]' : 'text-gray-900 bg-[#938872]'
@@ -172,10 +172,21 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
 const cellClass = TABLE_STYLES.cell(isDark);
 
   return (
-    <div ref={rootRef} className="space-y-6">
+    <div
+      ref={rootRef}
+      className={`space-y-6 ${
+        isDark
+          ? '[&_tbody>tr:nth-child(odd)]:!bg-[#2a2f38] [&_tbody>tr:nth-child(even)]:!bg-[#2c2c2c]'
+          : '[&_tbody>tr:nth-child(odd)]:!bg-[#f5f6f7] [&_tbody>tr:nth-child(even)]:!bg-[#e7e2d8]'
+      } ${
+        isDark
+          ? '[&_select]:!bg-gray-800 [&_select]:!text-white [&_select]:!border-gray-700'
+          : '[&_select]:!bg-white [&_select]:!text-gray-900 [&_select]:!border-gray-300'
+      }`}
+    >
       {/* First Year - 1st Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>First Year - 1st Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>First Year - 1st Semester</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -187,9 +198,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2c2c2c]' : 'bg-[#e7e2d8]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0101</td>
                 <td className="px-3 py-2 border-b border-gray-700">Introduction to Computing (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -199,9 +208,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0101.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Introduction to Computing (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -211,9 +218,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2c2c2c]' : 'bg-[#e7e2d8]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0102</td>
                 <td className="px-3 py-2 border-b border-gray-700">Fundamentals of Programming (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -223,9 +228,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0102.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Fundamentals of Programming (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -235,21 +238,17 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2c2c2c]' : 'bg-[#e7e2d8]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">IPP 0010</td>
                 <td className="px-3 py-2 border-b border-gray-700">Interdisiplinaryong Pagbasa at Pagsulat Tungo sa Mabisang Pagpapahayag</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
                   <select id="it_fy1_ipp0010" value={v_ipp0010} onChange={(e)=>change('it_fy1_ipp0010','IPP 0010 Interdisiplinaryong Pagbasa at Pagsulat Tungo sa Mabisang Pagpapahayag','IPP 0010',3,'First Year - 1st Semester',e.target.value,set_ipp0010)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
-                    <option value="">--</option>{SCALE.map(s => <option key={s} value={s}>{s}</option>)}
+                   <option value="">--</option>{SCALE.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">MMW 0001</td>
                 <td className="px-3 py-2 border-b border-gray-700">Mathematics in the Modern World</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -259,9 +258,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">PCM 0006</td>
                 <td className="px-3 py-2 border-b border-gray-700">Purposive Communication</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -271,9 +268,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">STS 0002</td>
                 <td className="px-3 py-2 border-b border-gray-700">Science, Technology and Society</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -283,9 +278,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">AAP 0007</td>
                 <td className="px-3 py-2 border-b border-gray-700">Art Appreciation</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -295,9 +288,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">PED 0001</td>
                 <td className="px-3 py-2 border-b border-gray-700">Foundation of Physical Activities</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -307,9 +298,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">NSTP 01</td>
                 <td className="px-3 py-2 border-b border-gray-700">National Service Training Program 1 (ROTC/CWTS)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.50</td>
@@ -322,11 +311,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* First Year - 2nd Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>First Year - 2nd Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>First Year - 2nd Semester</summary>
           <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
               <thead className={TABLE_STYLES.thead}>
@@ -338,9 +327,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                 </tr>
               </thead>
               <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CET 0111</td>
                 <td className="px-3 py-2 border-b border-gray-700">Calculus 1</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -350,9 +337,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CET 0114</td>
                 <td className="px-3 py-2 border-b border-gray-700">General Chemistry (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -362,9 +347,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CET 0114.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">General Chemistry (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -374,9 +357,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0121</td>
                 <td className="px-3 py-2 border-b border-gray-700">Introduction to Computer Human Interaction (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -386,9 +367,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0121.1A</td>
                 <td className="px-3 py-2 border-b border-gray-700">Introduction to Computer Human Interaction (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -398,9 +377,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0122</td>
                 <td className="px-3 py-2 border-b border-gray-700">Discrete Mathematics</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -410,9 +387,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0123</td>
                 <td className="px-3 py-2 border-b border-gray-700">Web Systems Technology (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -422,9 +397,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0123.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Web Systems Technology (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -434,9 +407,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">GTB 121</td>
                 <td className="px-3 py-2 border-b border-gray-700">Great Books</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -446,9 +417,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0103</td>
                 <td className="px-3 py-2 border-b border-gray-700">Intermediate Programming (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -458,9 +427,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0103.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Intermediate Programming (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -470,9 +437,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">PED 0013</td>
                 <td className="px-3 py-2 border-b border-gray-700">Philippine Folk Dance</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -482,9 +447,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">NSTP 02</td>
                 <td className="px-3 py-2 border-b border-gray-700">National Service Training Program 2 (ROTC/CWTS)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.50</td>
@@ -497,11 +460,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tbody>
             </table>
           </div>
-        </div>
+        </details>
 
       {/* Second Year - 1st Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Second Year - 1st Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Second Year - 1st Semester</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -513,9 +476,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CET 0121</td>
                 <td className="px-3 py-2 border-b border-gray-700">Calculus 2</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -525,9 +486,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CET 0225</td>
                 <td className="px-3 py-2 border-b border-gray-700">Physics for IT (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -537,9 +496,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CET 0225.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Physics for IT (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -549,9 +506,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0211</td>
                 <td className="px-3 py-2 border-b border-gray-700">Object Oriented Programming (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -561,9 +516,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0211.1A</td>
                 <td className="px-3 py-2 border-b border-gray-700">Object Oriented Programming (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -573,9 +526,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Professional Elective 1</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -585,9 +536,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0104</td>
                 <td className="px-3 py-2 border-b border-gray-700">Data Structures and Algorithms (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -597,9 +546,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0104.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Data Structures and Algorithms (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -609,9 +556,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">PPC 122</td>
                 <td className="px-3 py-2 border-b border-gray-700">Philippine Popular Culture</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -621,9 +566,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">TCW 0005</td>
                 <td className="px-3 py-2 border-b border-gray-700">The Contemporary World</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -633,9 +576,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">PED 0054</td>
                 <td className="px-3 py-2 border-b border-gray-700">PED</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -648,11 +589,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* Second Year - 2nd Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Second Year - 2nd Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Second Year - 2nd Semester</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -664,9 +605,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-            <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+            <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0212</td>
                 <td className="px-3 py-2 border-b border-gray-700">Platform Technology</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -676,9 +615,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0221</td>
                 <td className="px-3 py-2 border-b border-gray-700">Quantitative Methods</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -688,9 +625,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0222</td>
                 <td className="px-3 py-2 border-b border-gray-700">Networking 1 (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -700,9 +635,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0222.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Networking 1 (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -712,9 +645,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 2</td>
                 <td className="px-3 py-2 border-b border-gray-700">Professional Elective 2</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -724,9 +655,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0105</td>
                 <td className="px-3 py-2 border-b border-gray-700">Information Management (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -736,9 +665,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0105_1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Information Management (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -748,9 +675,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">GES 0013</td>
                 <td className="px-3 py-2 border-b border-gray-700">Environmental Science</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -760,9 +685,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">RPH 0004</td>
                 <td className="px-3 py-2 border-b border-gray-700">Readings in Philippine History</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -772,9 +695,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">UTS 0003</td>
                 <td className="px-3 py-2 border-b border-gray-700">Understanding the Self</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -784,9 +705,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">PED 0074</td>
                 <td className="px-3 py-2 border-b border-gray-700">Volleyball</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -799,11 +718,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* Third Year - 1st Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Third Year - 1st Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Third Year - 1st Semester</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -815,9 +734,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0311</td>
                 <td className="px-3 py-2 border-b border-gray-700">Advanced Database Systems (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -827,9 +744,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0311.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Advanced Database Systems (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -839,9 +754,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0312</td>
                 <td className="px-3 py-2 border-b border-gray-700">Networking 2 (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -851,9 +764,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0312.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Networking 2 (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -863,9 +774,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 3</td>
                 <td className="px-3 py-2 border-b border-gray-700">Professional Elective 3</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -875,9 +784,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0335</td>
                 <td className="px-3 py-2 border-b border-gray-700">Application and Emerging Technologies (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -887,9 +794,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0335.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Application and Emerging Technologies (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -899,9 +804,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">LWR 0009</td>
                 <td className="px-3 py-2 border-b border-gray-700">Life and Works of Rizal</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -914,11 +817,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* Third Year - 2nd Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Third Year - 2nd Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Third Year - 2nd Semester</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -930,9 +833,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0321</td>
                 <td className="px-3 py-2 border-b border-gray-700">Information Assurance and Security 1 (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -942,9 +843,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0321.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Information Assurance and Security 1 (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -954,9 +853,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0322</td>
                 <td className="px-3 py-2 border-b border-gray-700">System Integration and Architecture 1 (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -966,9 +863,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0322.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">System Integration and Architecture 1 (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -978,9 +873,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0323</td>
                 <td className="px-3 py-2 border-b border-gray-700">Integrative Programming and Technologies (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -990,9 +883,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0323.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Integrative Programming and Technologies (Laboratory)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">1.00</td>
@@ -1002,9 +893,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ETH 0008</td>
                 <td className="px-3 py-2 border-b border-gray-700">Ethics</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -1017,11 +906,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* MidYear Term */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Third Year - MidYear</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Third Year - MidYear</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -1033,9 +922,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CAP 0101</td>
                 <td className="px-3 py-2 border-b border-gray-700">Capstone Project 1</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -1045,24 +932,20 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0331</td>
                 <td className="px-3 py-2 border-b border-gray-700">System Integration and Architecture 2 (Lecture)</td>
-                <td className="px-3 py-2 border-b border-gray-700 text-right">2.25</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">2</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
                   <select id="it_my_eit0331" value={v_eit0331} onChange={(e)=>change('it_my_eit0331','EIT 0331 System Integration and Architecture 2 (Lecture)','EIT 0331',2.25,'Third Year - MidYear',e.target.value,set_eit0331)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
                     <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT 0331.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">System Integration and Architecture 2 (Laboratory)</td>
-                <td className="px-3 py-2 border-b border-gray-700 text-right">2.25</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">1</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
                   <select id="it_my_eit0331_1" value={v_eit0331_1} onChange={(e)=>change('it_my_eit0331_1','EIT 0331.1 System Integration and Architecture 2 (Laboratory)','EIT 0331.1',2.25,'Third Year - MidYear',e.target.value,set_eit0331_1)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
                     <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
@@ -1072,11 +955,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* Fourth Year - 1st Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Fourth Year - 1st Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Fourth Year - 1st Semester</summary>
         <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
             <thead className={TABLE_STYLES.thead}>
@@ -1088,9 +971,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
               </tr>
             </thead>
             <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">CAP 0102</td>
                 <td className="px-3 py-2 border-b border-gray-700">Capstone Project 2</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -1100,9 +981,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 4</td>
                 <td className="px-3 py-2 border-b border-gray-700">Professional Elective 4</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -1112,9 +991,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 5</td>
                 <td className="px-3 py-2 border-b border-gray-700">Professional Elective 5</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -1124,9 +1001,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">EIT ELECTIVE 6</td>
                 <td className="px-3 py-2 border-b border-gray-700">Professional Elective 6</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -1139,11 +1014,11 @@ const cellClass = TABLE_STYLES.cell(isDark);
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       {/* Fourth Year - 2nd Semester */}
-      <div className={TABLE_STYLES.container(isDark)}>
-        <h4 className={TABLE_STYLES.headerText(isDark)}>Fourth Year - 2nd Semester</h4>
+      <details className={TABLE_STYLES.container(isDark)} open>
+        <summary className={`${TABLE_STYLES.headerText(isDark)} cursor-pointer select-none`}>Fourth Year - 2nd Semester</summary>
           <div className="overflow-x-auto">
 <table className={TABLE_STYLES.table}>
               <thead className={TABLE_STYLES.thead}>
@@ -1155,9 +1030,7 @@ const cellClass = TABLE_STYLES.cell(isDark);
                 </tr>
               </thead>
               <tbody>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">IIP 0101A</td>
                 <td className="px-3 py-2 border-b border-gray-700">Practicum (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">2.00</td>
@@ -1167,22 +1040,20 @@ const cellClass = TABLE_STYLES.cell(isDark);
                   </select>
                 </td>
               </tr>
-              <tr className={`${
-                isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
-              }`}>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">IIP 0101.1</td>
                 <td className="px-3 py-2 border-b border-gray-700">Practicum (Immersion)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">4.00</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
                   <select id="it_fy4b_iip0101_1" value={v_iip0101_1} onChange={(e)=>change('it_fy4b_iip0101_1','IIP 0101.1 Practicum (Immersion)','IIP 0101.1',4,'Fourth Year - 2nd Semester',e.target.value,set_iip0101_1)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
                     <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </td>
-                    </tr>
+                    </select>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
-        </div>
+        </details>
     </div>
   );
 };

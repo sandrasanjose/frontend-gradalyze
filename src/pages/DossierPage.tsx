@@ -73,43 +73,43 @@ const DossierPage = () => {
 
   const getProfessionalSummary = (type: string, course: string): { headline: string; details: string } => {
     const courseLabel = course || 'Information Technology';
-    const base = `A graduate of ${courseLabel} from Pamantasan ng Lungsod ng Maynila,`;
+    const base1 = `This academic career dossier synthesizes a comprehensive review of the student's performance throughout the ${courseLabel} program at Pamantasan ng Lungsod ng Maynila.`;
     const t = (type || '').toLowerCase();
     switch (t) {
       case 'investigative':
         return {
-          headline: `${base} with a strong investigative profile focused on analytical thinking and evidence-based problem solving.`,
-          details: 'Demonstrates proficiency in research, data interpretation, and systems analysis to build reliable, scalable solutions.'
+          headline: `${base1} The assessment highlights strong proficiency in analytical and research-oriented competencies, with consistent achievement across mathematics, algorithms, data structures, and applied data analysis. Coursework and project outputs indicate depth in experimental design, evidence-based reasoning, and the capacity to translate complex datasets into reliable, scalable solutions.`,
+          details: 'The student demonstrates a well-structured competency profile characterized by technical rigor and methodical problem solving. The analysis suggests high alignment with roles in data science, AI/ML engineering, systems analysis, and research engineering within technology-driven organizations. Academic records further indicate readiness for independent inquiry and cross-functional collaboration, supporting contributions to model development, systems modeling, and decision-support tooling.'
         };
       case 'artistic':
         return {
-          headline: `${base} with an artistic profile centered on creative design and innovative solution building.`,
-          details: 'Applies user-centric thinking, visual communication, and imaginative prototyping to craft engaging digital experiences.'
+          headline: `${base1} Results reveal pronounced strengths in creative computing and human-centered design, reflected in excellence across UI/UX, interaction design, multimedia applications, and front-end engineering. Project work demonstrates fluency in visual communication, prototyping, and turning abstract concepts into intuitive, high-impact user experiences.`,
+          details: 'The competency profile balances aesthetic sensibilities with technical execution, indicating strong suitability for roles in product design, front-end development, game and interactive media, and user research. Academic performance shows adaptability in both individual and team settings, with the ability to rapidly iterate on design hypotheses and incorporate feedback into polished, accessible interfaces.'
         };
       case 'social':
         return {
-          headline: `${base} with a social profile emphasizing collaboration, communication, and stakeholder alignment.`,
-          details: 'Excels at facilitation, knowledge sharing, and building empathetic solutions that address real user needs.'
+          headline: `${base1} Evidence points to advanced collaboration and communication skills, with high performance in team-based coursework, IT support activities, and stakeholder-facing deliverables. The record reflects strength in facilitation, knowledge transfer, and translating user needs into practical, service-oriented solutions.`,
+          details: 'The student’s profile indicates strong fit for roles in IT support, systems training, customer success, and community technology initiatives. Performance trends suggest effectiveness in environments requiring empathy, clear documentation, and continuous user engagement, enabling smooth onboarding, sustained adoption, and impactful change management across organizations.'
         };
       case 'enterprising':
         return {
-          headline: `${base} with an enterprising profile geared toward leadership, product thinking, and delivery.`,
-          details: 'Combines strategic planning and business acumen to drive initiatives from concept to measurable outcomes.'
+          headline: `${base1} The assessment underscores strategic and leadership-oriented competencies, including project planning, product thinking, and structured delivery. Academic performance in entrepreneurship, project management, and cross-functional coordination courses demonstrates capacity to define outcomes, align teams, and execute toward measurable impact.`,
+          details: 'The competency profile aligns strongly with product management, project coordination, and venture-building roles. The student’s work shows fluency in translating business requirements into technical roadmaps, managing risk, and communicating priorities across stakeholders—skills essential to driving initiatives from concept through completion in dynamic organizations.'
         };
       case 'realistic':
         return {
-          headline: `${base} with a realistic profile focused on practical, hands-on engineering.`,
-          details: 'Strong in implementation, troubleshooting, and optimizing systems with attention to reliability and performance.'
+          headline: `${base1} Results emphasize practical engineering strengths in implementation, configuration, and system troubleshooting. High performance across systems administration, networking, and lab-based courses indicates reliability in building and maintaining robust, performance-oriented infrastructure.`,
+          details: 'The student exhibits strong alignment with roles in systems administration, network engineering, site reliability, and hardware support. Academic evidence suggests a disciplined approach to root-cause analysis, operational excellence, and preventive maintenance—capabilities that support dependable, scalable operations in production environments.'
         };
       case 'conventional':
         return {
-          headline: `${base} with a conventional profile prioritizing organization, accuracy, and process excellence.`,
-          details: 'Delivers consistent results through documentation, quality controls, and efficient workflows.'
+          headline: `${base1} The analysis shows pronounced strengths in organization, documentation, and data stewardship. Consistent results in database management, information systems, QA, and technical writing reflect precision, process adherence, and an eye for detail.`,
+          details: 'The competency profile aligns with database administration, quality assurance, systems auditing, and technical documentation roles. Academic patterns indicate reliability in structured workflows, versioned artifacts, and compliance-focused deliverables, supporting trustworthy operations and continuous improvement across teams.'
         };
       default:
         return {
-          headline: `${base} with a balanced learning profile and growth mindset.`,
-          details: 'Committed to continuous learning, disciplined execution, and delivering high-quality outcomes.'
+          headline: `${base1} Performance data indicates a balanced competency profile, with evidence of steady growth across core computing subjects and applied project work.`,
+          details: 'The record suggests broad-based readiness for early-career roles across software development and IT operations, with the adaptability to specialize further through targeted experience and continued learning in industry contexts.'
         };
     }
   };
@@ -489,31 +489,13 @@ const DossierPage = () => {
             <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Loading…</div>
           ) : (
             <div id="dossier-content" className="space-y-8">
-            {/* Professional Summary */}
+            {/* Executive Summary (plain text) */}
               <div className="mb-2">
-                <h3 className={`text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Professional Summary</h3>
-              <div className={`p-6 rounded-lg border ${
-                isDark 
-                  ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50' 
-                  : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
-              }`}>
-                  {(() => { 
-                    const s = getProfessionalSummary(primaryArchetype || 'Analysis Required', user.course);
-                    const entries = Object.entries(archetypePercents || {}).filter(([,v]) => typeof v === 'number') as [string, number][];
-                    const secondary = entries
-                      .sort((a,b) => b[1] - a[1])
-                      .filter(([k]) => (k.toLowerCase() !== (primaryArchetype||'').toLowerCase()))
-                      .slice(0, 2)
-                      .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1))
-                      .join(' and ');
-                    return (
-                      <div className="space-y-3">
-                        <p className={`leading-relaxed text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{s.headline}</p>
-                        <p className={`leading-relaxed text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{s.details}{secondary ? ` Secondary strengths include ${secondary}, enabling effective cross-functional collaboration.` : ''}</p>
-                      </div>
-                    ); 
-                  })()}
-                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Executive Summary</h3>
+                <div className={`border-t ${isDark ? 'border-gray-700' : 'border-[#DACAO2]'} mb-3`} />
+                <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Visual synopsis of quantitative findings from comprehensive academic analysis. Charts and metrics represent statistical distributions of competency archetypes and career trajectory predictions derived from performance data.
+                </p>
               </div>
 
               {/* Program table removed on Dossier view */}
@@ -523,7 +505,30 @@ const DossierPage = () => {
                 primaryArchetype={primaryArchetype}
                 archetypePercents={archetypePercents}
                 existingTranscript={existingTranscript}
+                twoColumn
               />
+
+              {/*Professional Summary*/}
+              <div className="mb-2">
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Professional Summary</h3>
+                <div className={`border-t ${isDark ? 'border-gray-700' : 'border-[#DACAO2]'} mb-3`} />
+                {(() => {
+                  const s = getProfessionalSummary(primaryArchetype || 'Analysis Required', user.course);
+                  const entries = Object.entries(archetypePercents || {}).filter(([, v]) => typeof v === 'number') as [string, number][];
+                  const secondary = entries
+                    .sort((a, b) => b[1] - a[1])
+                    .filter(([k]) => (k.toLowerCase() !== (primaryArchetype || '').toLowerCase()))
+                    .slice(0, 2)
+                    .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1))
+                    .join(' and ');
+                  return (
+                    <div className="space-y-3">
+                      <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{s.headline}</p>
+                      <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{s.details}{secondary ? ` Secondary strengths include ${secondary}, enabling effective cross-functional collaboration.` : ''}</p>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
         </div>
