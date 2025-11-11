@@ -150,7 +150,7 @@ const CURRICULUM_DATA: Record<Props['curriculum'], Semester[]> = {
   ],
 };
 
-const SCALE: string[] = ['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00'];
+const SCALE: string[] = ['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00', '5.00'];
 
 // Parent Table styles
 const TABLE_STYLES = {
@@ -182,6 +182,7 @@ const CStaticTable: React.FC<Props> = ({
 }) => {
   const { isDark } = useTheme();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const suppressRef = useRef<boolean>(false);
 
   // Per-row state (explicit ids; no arrays/maps)
   // --- BSCS Year 1 / First Semester ---
@@ -298,9 +299,14 @@ const CStaticTable: React.FC<Props> = ({
     setter: (v: string) => void
   ) => {
     setter(val);
-    if (!val) return;
-    const num = parseFloat(val);
-    if (!isFinite(num)) return;
+    if (suppressRef.current) return;
+    let num: number;
+    if (!val) {
+      num = 0;
+    } else {
+      const parsed = parseFloat(val);
+      num = isFinite(parsed) ? parsed : 0;
+    }
     upsert({ id, subject, courseCode: code, units, grade: parseFloat(num.toFixed(2)), semester: sem });
   };
 
@@ -311,15 +317,28 @@ const CStaticTable: React.FC<Props> = ({
     if (!container) return;
     const selects = Array.from(container.querySelectorAll('select')) as HTMLSelectElement[];
     const toStr = (n: number) => n.toFixed(2);
-    for (let i = 0; i < selects.length && i < prefillGrades.length; i++) {
-      const s = selects[i];
-      const val = toStr(prefillGrades[i]);
-      if (SCALE.includes(val)) {
-        s.value = val;
-        const evt = new Event('change', { bubbles: true });
-        s.dispatchEvent(evt);
+    suppressRef.current = true;
+    const total = Math.min(selects.length, prefillGrades.length);
+    const batch = 15;
+    let i = 0;
+    const run = () => {
+      const end = Math.min(i + batch, total);
+      for (; i < end; i++) {
+        const s = selects[i];
+        const val = toStr(prefillGrades[i]);
+        if (SCALE.includes(val)) {
+          s.value = val;
+          const evt = new Event('change', { bubbles: true });
+          s.dispatchEvent(evt);
+        }
       }
-    }
+      if (i < total) {
+        setTimeout(run, 0);
+      } else {
+        setTimeout(() => { suppressRef.current = false; }, 0);
+      }
+    };
+    run();
     // no dependencies beyond prefillGrades (rootRef does not change)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillGrades]);
@@ -329,16 +348,31 @@ const CStaticTable: React.FC<Props> = ({
     if (!prefillGradesById) return;
     const container = rootRef.current;
     if (!container) return;
-    Object.entries(prefillGradesById).forEach(([id, num]) => {
-      const s = container.querySelector<HTMLSelectElement>(`select#${id}`);
-      if (!s) return;
-      const val = num.toFixed(2);
-      if (SCALE.includes(val)) {
-        s.value = val;
-        const evt = new Event('change', { bubbles: true });
-        s.dispatchEvent(evt);
+    suppressRef.current = true;
+    const entries = Object.entries(prefillGradesById);
+    const total = entries.length;
+    const batch = 15;
+    let i = 0;
+    const run = () => {
+      const end = Math.min(i + batch, total);
+      for (; i < end; i++) {
+        const [id, num] = entries[i] as [string, number];
+        const s = container.querySelector<HTMLSelectElement>(`select#${id}`);
+        if (!s) continue;
+        const val = num.toFixed(2);
+        if (SCALE.includes(val)) {
+          s.value = val;
+          const evt = new Event('change', { bubbles: true });
+          s.dispatchEvent(evt);
+        }
       }
-    });
+      if (i < total) {
+        setTimeout(run, 0);
+      } else {
+        setTimeout(() => { suppressRef.current = false; }, 0);
+      }
+    };
+    run();
   }, [prefillGradesById]);
 
   // Emit the canonical order of select ids once on mount (derived from CURRICULUM_DATA)
@@ -1522,7 +1556,29 @@ const CStaticTable: React.FC<Props> = ({
                 <td className="px-3 py-2 border-b border-gray-700">Art Appreciation</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
-                  <select id="cs_sy2_aap0007" value={v_aap0007} onChange={(e)=>change('cs_sy2_aap0007','Art Appreciation','AAP 0007',3,'Second Year - 2nd Semester',e.target.value,set_aap0007)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
+                  <select
+                    id="cs_sy2_aap0007"
+                    value={v_aap0007}
+                    onChange={(e) =>
+                      change(
+                        'cs_sy2_aap0007',
+                        'Art Appreciation',
+                        'AAP 0007',
+                        3,
+                        'Second Year - 2nd Semester',
+                        e.target.value,
+                        set_aap0007
+                      )
+                    }
+                    className={TABLE_STYLES.select}
+                    disabled={isProcessing}
+                  >
+                    <option value="">--</option>
+                    {SCALE.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                   </select>
                 </td>
               </tr>

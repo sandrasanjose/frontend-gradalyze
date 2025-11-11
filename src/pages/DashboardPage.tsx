@@ -86,13 +86,13 @@ const DashboardPage = () => {
             if (data.tor_notes) {
               const parsed = JSON.parse(data.tor_notes);
               const arch = parsed?.analysis_results?.archetype_analysis;
-              const pref = arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
+              const pref = arch?.debias_percentages || arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
               if (pref && typeof pref === 'object') {
                 const toNum = (v: unknown): number => {
                   const n = Number(v); return Number.isFinite(n) ? n : 0;
                 };
                 // Determine primary from backend if present
-                let primaryArchetype = data.primary_archetype || arch?.primary_archetype;
+                let primaryArchetype = arch?.primary_archetype_debiased || arch?.primary_archetype || data.primary_archetype;
                 if (!primaryArchetype) {
                   const arr = [
                     { n: 'Realistic', v: toNum((pref as any).Realistic ?? (pref as any).realistic) },
@@ -636,10 +636,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Methodology note */}
-        <p className={`text-xs -mt-2 mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          Percentages reflect fairness-normalized values when available (adjusted for curriculum axis prevalence).
-        </p>
+
 
         {/* All Archetypes Toggle */}
         <div className="flex flex-col items-center w-full">

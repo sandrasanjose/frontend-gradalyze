@@ -7,10 +7,11 @@ interface Props {
   onGradesChange: (grades: GradeRow[]) => void;
   isProcessing: boolean;
   prefillGrades?: number[];
+  prefillGradesById?: Record<string, number>;
   onEmitOrder?: (ids: string[]) => void;
 }
 
-const SCALE = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00'];
+const SCALE = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00'];
 
 // Theme-based styling constants for easier customization
 const TABLE_STYLES = {
@@ -33,9 +34,10 @@ const TABLE_STYLES = {
   headerText: (isDark: boolean) => `text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`
 };
 
-const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, onEmitOrder }: Props) => {
+const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, prefillGradesById, onEmitOrder }: Props) => {
   const { isDark } = useTheme();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const suppressRef = useRef<boolean>(false);
   // Hardcoded per-row values (no arrays, no mapping)
   const [v_icc0101, set_icc0101] = useState('');
   const [v_icc0101_1, set_icc0101_1] = useState('');
@@ -82,9 +84,9 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
   const [v_eit0222, set_eit0222] = useState('');
   const [v_eit0222_1, set_eit0222_1] = useState('');
   const [v_eit_elective2, set_eit_elective2] = useState('');
+  const [v_ges0013, set_ges0013] = useState('');
   const [v_icc0105, set_icc0105] = useState('');
   const [v_icc0105_1, set_icc0105_1] = useState('');
-  const [v_ges0013, set_ges0013] = useState('');
   const [v_rph0004, set_rph0004] = useState('');
   const [v_uts0003, set_uts0003] = useState('');
   const [v_ped0074, set_ped0074] = useState('');
@@ -133,20 +135,33 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
 
   const change = (id: string, subject: string, code: string, units: number, sem: string, val: string, setter: (v:string)=>void) => {
     setter(val);
-    if (!val) return;
-    const num = parseFloat(val); if (!isFinite(num)) return;
+    if (suppressRef.current) return;
+    let num: number;
+    if (!val) {
+      num = 0;
+    } else {
+      const parsed = parseFloat(val);
+      num = isFinite(parsed) ? parsed : 0;
+    }
     upsert({ id, subject, courseCode: code, units, grade: parseFloat(num.toFixed(2)), semester: sem });
   };
 
-  // Prefill dropdowns sequentially using provided numeric grades
+  // Prefill dropdowns sequentially using provided numeric grades (batched)
   useEffect(() => {
+    // If we have id-based prefill, prefer it and skip positional prefill
+    if (prefillGradesById && Object.keys(prefillGradesById).length > 0) return;
     if (!prefillGrades || prefillGrades.length === 0) return;
     const container = rootRef.current;
     if (!container) return;
+    const selects = Array.from(container.querySelectorAll('select')) as HTMLSelectElement[];
+    const toStr = (n: number) => n.toFixed(2);
+    suppressRef.current = true;
+    const total = Math.min(selects.length, prefillGrades.length);
+    const batch = 15;
+    let i = 0;
     const run = () => {
-      const selects = Array.from(container.querySelectorAll('select')) as HTMLSelectElement[];
-      const toStr = (n: number) => n.toFixed(2);
-      for (let i = 0; i < selects.length && i < prefillGrades.length; i++) {
+      const end = Math.min(i + batch, total);
+      for (; i < end; i++) {
         const s = selects[i];
         const val = toStr(prefillGrades[i]);
         if (SCALE.includes(val)) {
@@ -155,10 +170,46 @@ const ITStaticTable = ({ grades, onGradesChange, isProcessing, prefillGrades, on
           s.dispatchEvent(evt);
         }
       }
+      if (i < total) {
+        setTimeout(run, 0);
+      } else {
+        setTimeout(() => { suppressRef.current = false; }, 0);
+      }
     };
-    const id = window.setTimeout(run, 0);
-    return () => window.clearTimeout(id);
-  }, [prefillGrades]);
+    run();
+  }, [prefillGrades, prefillGradesById]);
+
+  // Prefill specific selects by id using prefillGradesById (batched)
+  useEffect(() => {
+    if (!prefillGradesById) return;
+    const container = rootRef.current;
+    if (!container) return;
+    suppressRef.current = true;
+    const entries = Object.entries(prefillGradesById);
+    const total = entries.length;
+    const batch = 15;
+    let i = 0;
+    const run = () => {
+      const end = Math.min(i + batch, total);
+      for (; i < end; i++) {
+        const [id, num] = entries[i] as [string, number];
+        const s = container.querySelector<HTMLSelectElement>(`select#${id}`);
+        if (!s) continue;
+        const val = Number(num).toFixed(2);
+        if (SCALE.includes(val)) {
+          s.value = val;
+          const evt = new Event('change', { bubbles: true });
+          s.dispatchEvent(evt);
+        }
+      }
+      if (i < total) {
+        setTimeout(run, 0);
+      } else {
+        setTimeout(() => { suppressRef.current = false; }, 0);
+      }
+    };
+    run();
+  }, [prefillGradesById]);
 
   // Emit the canonical order of select ids once on mount
   useEffect(() => {
@@ -656,6 +707,16 @@ const cellClass = TABLE_STYLES.cell(isDark);
                 </td>
               </tr>
               <tr>
+                <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">GES 0013</td>
+                <td className="px-3 py-2 border-b border-gray-700">Environmental Science</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
+                <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
+                  <select id="it_sy2_ges0013" value={v_ges0013} onChange={(e)=>change('it_sy2_ges0013','GES 0013 Environmental Science','GES 0013',3,'Second Year - 2nd Semester',e.target.value,set_ges0013)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
+                    <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </td>
+              </tr>
+              <tr>
                 <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">ICC 0105</td>
                 <td className="px-3 py-2 border-b border-gray-700">Information Management (Lecture)</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
@@ -671,16 +732,6 @@ const cellClass = TABLE_STYLES.cell(isDark);
                 <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
                 <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
                   <select id="it_sy2_icc0105_1" value={v_icc0105_1} onChange={(e)=>change('it_sy2_icc0105_1','ICC 0105.1 Information Management (Laboratory)','ICC 0105.1',3,'Second Year - 2nd Semester',e.target.value,set_icc0105_1)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
-                    <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">GES 0013</td>
-                <td className="px-3 py-2 border-b border-gray-700">Environmental Science</td>
-                <td className="px-3 py-2 border-b border-gray-700 text-right">3.00</td>
-                <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
-                  <select id="it_sy2_ges0013" value={v_ges0013} onChange={(e)=>change('it_sy2_ges0013','GES 0013 Environmental Science','GES 0013',3,'Second Year - 2nd Semester',e.target.value,set_ges0013)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right" disabled={isProcessing}>
                     <option value="">--</option>{SCALE.map(s=> <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>

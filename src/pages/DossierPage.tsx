@@ -154,9 +154,9 @@ const DossierPage = () => {
           const cf = parsed?.analysis_results?.career_forecast;
           if (cf && typeof cf === 'object') setCareerForecast(cf);
 
-          // archetypes: prefer backend normalized if present
+          // archetypes: prefer backend debiased/normalized if present
           const arch = parsed?.analysis_results?.archetype_analysis;
-          const norm = arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
+          const norm = arch?.debias_percentages || arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
           if (norm && typeof norm === 'object') {
             // Map to lowercase keys expected by AnalysisResults
             const map: any = {};
@@ -168,6 +168,11 @@ const DossierPage = () => {
             map.enterprising = pull('Enterprising');
             map.conventional = pull('Conventional');
             setArchetypePercents(map);
+          }
+          if (typeof arch?.primary_archetype_debiased === 'string') {
+            setPrimaryArchetype(arch.primary_archetype_debiased);
+          } else if (typeof arch?.primary_archetype === 'string') {
+            setPrimaryArchetype(arch.primary_archetype);
           }
         } catch (error) {
           console.error('Error:', error);

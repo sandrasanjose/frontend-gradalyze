@@ -74,6 +74,7 @@ const AnalysisPage = () => {
     realistic?: number; investigative?: number; artistic?: number; social?: number; enterprising?: number; conventional?: number;
   }>({});
   const [careerForecast, setCareerForecast] = useState<Record<string, number> | string[]>({});
+  const [prefillById, setPrefillById] = useState<Record<string, number> | null>(null);
 
   const fetchProfile = useCallback(async (email: string) => {
     try {
@@ -111,11 +112,25 @@ const AnalysisPage = () => {
           if (cf && typeof cf === 'object') setCareerForecast(cf);
           // Prefer backend normalized archetype percentages if available
           const arch = parsed?.analysis_results?.archetype_analysis;
-          const norm = arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
+          const norm = arch?.debias_percentages || arch?.opportunity_normalized_percentages || arch?.normalized_percentages || arch?.archetype_percentages;
           if (norm && typeof norm === 'object') {
             const toNum = (v: unknown): number => {
               const n = Number(v); return Number.isFinite(n) ? n : 0;
             };
+
+  // Debounced auto-save whenever grades change
+  useEffect(() => {
+    if (!user?.id) return;
+    if (!grades) return;
+    const handle = setTimeout(async () => {
+      try {
+        await gradesService.updateUserGrades(user.id, grades);
+      } catch (e) {
+        console.warn('Auto-save grades failed (non-blocking):', e);
+      }
+    }, 800);
+    return () => clearTimeout(handle);
+  }, [grades, user?.id]);
             setArchetypePercents({
               realistic: toNum((norm as any).Realistic ?? (norm as any).realistic),
               investigative: toNum((norm as any).Investigative ?? (norm as any).investigative),
@@ -124,7 +139,9 @@ const AnalysisPage = () => {
               enterprising: toNum((norm as any).Enterprising ?? (norm as any).enterprising),
               conventional: toNum((norm as any).Conventional ?? (norm as any).conventional),
             });
-            if (typeof arch?.primary_archetype === 'string') {
+            if (typeof arch?.primary_archetype_debiased === 'string') {
+              setPrimaryArchetype(arch.primary_archetype_debiased);
+            } else if (typeof arch?.primary_archetype === 'string') {
               setPrimaryArchetype(arch.primary_archetype);
             }
           }
@@ -419,7 +436,7 @@ const AnalysisPage = () => {
     return [
       // --- BSCS Year 1 / First Semester ---
       'cs_fy1_csc0102', 'cs_fy1_icc0101', 'cs_fy1_icc0101_1', 'cs_fy1_icc0102', 'cs_fy1_icc0102_1',
-      'cs_fy1_ipp0010', 'cs_fy1_mmw0001', 'cs_fy1_ped0001', 'cs_fy1_pcm0006', 'cs_fy1_sts0002', 'cs_fy1_nstp0001',
+      'cs_fy1_ipp0010', 'cs_fy1_mmw0001', 'cs_fy1_ped0001', 'cs_fy1_pcm0006', 'cs_fy1_sts0002', 'cs_fy1_nstp01',
 
       // --- BSCS Year 1 / Second Semester ---
       'cs_fy2_csc0211', 'cs_fy2_csc0223', 'cs_fy2_icc0103', 'cs_fy2_icc0103_1', 'cs_fy2_icc0104',
@@ -434,7 +451,7 @@ const AnalysisPage = () => {
       'cs_sy2_ges0013', 'cs_sy2_icc0106', 'cs_sy2_icc0106_1', 'cs_sy2_ped0023', 'cs_sy2_aap0007',
 
       // --- BSCS Year 3 / First Semester ---
-      'cs_ty1_csc0311', 'cs_ty1_csc0311_1', 'cs_ty1_csc0312', 'cs_ty1_csc0312_1',
+      'cs_ty1_csc0311', 'cs_ty1_csc0312', 'cs_ty1_csc0312_1',
       'cs_ty1_csc0313', 'cs_ty1_csc0313_1', 'cs_ty1_csc0314', 'cs_ty1_csc0314_1',
       'cs_ty1_csc0315', 'cs_ty1_csc0315_1',
 
@@ -451,7 +468,7 @@ const AnalysisPage = () => {
 
       // --- BSCS Year 4 / Second Semester ---
       'cs_fy4b_csc0421a', 'cs_fy4b_csc0422', 'cs_fy4b_csc0422_1',
-      'cs_fy4b_csc0423', 'cs_fy4b_csc0423_1', 'cs_fy4b_csc0424', 'cs_fy4b_csc0424_1',
+      'cs_fy4b_csc0423', 'cs_fy4b_csc0424', 'cs_fy4b_csc0424_1',
     ];
   }
 
@@ -492,57 +509,72 @@ const AnalysisPage = () => {
 
   // When table order is known and we have cached grades, remap them to canonical IDs and prefill
   useEffect(() => {
-    if (!savedGradesCache || !itOrderIds || itOrderIds.length === 0) return;
-    // Build a grades array by aligning saved items to the emitted order by index.
-    // This migrates older saves that used non-curriculum IDs.
-    const max = Math.min(itOrderIds.length, savedGradesCache.length);
-    const remapped: GradeRow[] = [];
-    for (let i = 0; i < max; i++) {
-      const src = savedGradesCache[i];
-      const id = itOrderIds[i];
-      const gradeNum = parseFloat(Number(src?.grade ?? 0).toFixed(2));
-      remapped.push({
-        id,
-        subject: src?.subject || `Subject ${i + 1}`,
-        courseCode: src?.courseCode || '',
-        units: typeof src?.units === 'number' && isFinite(src.units) ? src.units : 3,
-        grade: gradeNum,
-        semester: src?.semester || ''
-      });
-    }
-
-    // Prefill dropdowns and set table rows
-    const arr = remapped.map(r => r.grade);
-    setPrefill(arr.map(n => parseFloat(Number(n).toFixed(2))));
+    if (!savedGradesCache || savedGradesCache.length === 0) return;
+    const order = (itOrderIds && itOrderIds.length > 0) ? itOrderIds : getCurriculumOrder(user.course);
+    if (!order || order.length === 0) return;
+    // Only hydrate if table is empty to avoid clobbering user edits
+    if (grades && grades.length > 0) return;
+    const map = new Map(savedGradesCache.map(g => [g.id, g] as const));
+    const remapped: GradeRow[] = order.map((id, idx) => {
+      const g = map.get(id);
+      if (g) return { ...g, grade: parseFloat(Number(g.grade).toFixed(2)) } as GradeRow;
+      return { id, subject: `Subject ${idx + 1}`, courseCode: '', units: 3, grade: 0, semester: '' } as GradeRow;
+    });
     setGrades(remapped);
-
-    // Persist the migrated rows once so future loads use canonical IDs
-    try {
-      if (user.id && remapped.length > 0) {
-        void gradesService.updateUserGrades(user.id, remapped);
-      }
-    } catch (e) {
-      console.warn('Failed to persist migrated grades', e);
-    }
-
-    // apply once
+    setPrefill(remapped.map(r => parseFloat(Number(r.grade || 0).toFixed(2))));
+    const idMap: Record<string, number> = {};
+    remapped.forEach(r => { if (r?.id) idMap[r.id] = parseFloat(Number(r.grade || 0).toFixed(2)); });
+    setPrefillById(idMap);
+    // clear cache marker so we don't reapply
     setSavedGradesCache(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itOrderIds, savedGradesCache]);
+  }, [savedGradesCache, itOrderIds]);
+
+  // Ensure current grades align to the runtime-emitted order to keep table and arrays in sync
+  useEffect(() => {
+    if (!itOrderIds || itOrderIds.length === 0) return;
+    if (!grades || grades.length === 0) return;
+    // If current grades already match order and length, skip
+    const sameLen = grades.length === itOrderIds.length;
+    const sameOrder = sameLen && grades.every((g, i) => g.id === itOrderIds[i]);
+    if (sameLen && sameOrder) return;
+    const map = new Map(grades.map(g => [g.id, g] as const));
+    const remapped: GradeRow[] = itOrderIds.map((id, idx) => {
+      const existing = map.get(id);
+      if (existing) return existing;
+      return {
+        id,
+        subject: `Subject ${idx + 1}`,
+        courseCode: '',
+        units: 3,
+        grade: 0,
+        semester: ''
+      } as GradeRow;
+    });
+    setGrades(remapped);
+    setPrefill(remapped.map(r => parseFloat(Number(r.grade || 0).toFixed(2))));
+    const idMap2: Record<string, number> = {};
+    remapped.forEach(r => { if (r?.id && typeof r.grade === 'number') idMap2[r.id] = parseFloat(Number(r.grade).toFixed(2)); });
+    setPrefillById(idMap2);
+  }, [itOrderIds]);
 
   const [prefill, setPrefill] = useState<number[]>([]);
-  const handleGradesExtracted = (extractedGrades: unknown[]) => {
-    console.log('[OCR] handling grades for prefill:', extractedGrades);
-
+  const handleGradesExtracted = (extractedGrades: unknown[], metadata?: any[]) => {
+    console.log('[OCR] handling grades for prefill:', extractedGrades, metadata);
+    
     if (Array.isArray(extractedGrades) && extractedGrades.length > 0) {
+      // Resolve canonical order: prefer runtime-emitted order from table (ensures exact expected length)
+      const order = (itOrderIds && itOrderIds.length > 0) ? itOrderIds : getCurriculumOrder(user.course);
+      const expectedLen = order.length;
+
       // Check if it's structured grade objects (new format)
       const firstGrade = extractedGrades[0];
       if (firstGrade && typeof firstGrade === 'object' && 'grade' in firstGrade) {
         console.log('[OCR] Structured grades detected, mapping to curriculum order');
-        const curriculumOrder = getCurriculumOrder(user.course);
+        const curriculumOrder = order;
 
-        // Map extracted grades to curriculum IDs in order
-        const gradeRows: GradeRow[] = extractedGrades.map((g, index) => {
+        // Map extracted grades to curriculum IDs in order, padding to full length
+        const gradeRows: GradeRow[] = Array.from({ length: expectedLen }).map((_, index) => {
+          const g = extractedGrades[index] as any;
           const gradeObj = g as {
             id?: unknown;
             subject?: unknown;
@@ -555,26 +587,42 @@ const AnalysisPage = () => {
           // Use curriculum ID if available, otherwise fallback to generic
           const curriculumId = curriculumOrder[index] || `G-${index + 1}`;
 
+          // Normalize grade (INC/DRP/W/NA => 0.00; clamp [0,5])
+          const raw = gradeObj?.grade as any;
+          const rawStr = String(raw ?? '').trim().toLowerCase();
+          let gnum = parseFloat(String(raw));
+          if (!isFinite(gnum) || rawStr === 'inc' || rawStr === 'incomplete' || rawStr === 'drp' || rawStr === 'drop' || rawStr === 'w' || rawStr === 'na' || rawStr === 'n/a') {
+            gnum = 0.0;
+          }
+          gnum = Math.min(5.0, Math.max(0.0, gnum));
+
           return {
             id: curriculumId,
-            subject: typeof gradeObj.subject === 'string' ? gradeObj.subject : `Subject ${index + 1}`,
-            courseCode: typeof gradeObj.courseCode === 'string' ? gradeObj.courseCode : '',
-            units: typeof gradeObj.units === 'number' ? gradeObj.units : 3,
-            grade: typeof gradeObj.grade === 'string' || typeof gradeObj.grade === 'number'
-              ? parseFloat(String(gradeObj.grade))
-              : 0,
-            semester: typeof gradeObj.semester === 'string' ? gradeObj.semester : ''
+            subject: g && typeof gradeObj?.subject === 'string' ? gradeObj.subject : `Subject ${index + 1}`,
+            courseCode: g && typeof gradeObj?.courseCode === 'string' ? gradeObj.courseCode : '',
+            units: g && typeof gradeObj?.units === 'number' ? (gradeObj.units as number) : 3,
+            grade: parseFloat(Number(gnum).toFixed(2)),
+            semester: g && typeof gradeObj?.semester === 'string' ? gradeObj.semester : ''
           };
         });
 
-        // Set prefill array with grade values for dropdown initialization
-        const numericGrades = extractedGrades.map(g => {
-          const grade = g as { grade: unknown };
-          return typeof grade.grade === 'string' || typeof grade.grade === 'number'
-            ? parseFloat(String(grade.grade))
-            : 0;
+        // Set prefill array with grade values (pad to expected length)
+        const numericGradesPadded: number[] = Array.from({ length: expectedLen }).map((_, i) => {
+          const gg = extractedGrades[i] as any;
+          const vRaw = gg && (typeof gg.grade === 'string' || typeof gg.grade === 'number') ? gg.grade : '';
+          const vStr = String(vRaw).trim().toLowerCase();
+          let v = parseFloat(String(vRaw));
+          if (!isFinite(v) || vStr === 'inc' || vStr === 'incomplete' || vStr === 'drp' || vStr === 'drop' || vStr === 'w' || vStr === 'na' || vStr === 'n/a') {
+            v = 0.0;
+          }
+          v = Math.min(5.0, Math.max(0.0, v));
+          return parseFloat(Number(v).toFixed(2));
         });
-        setPrefill(numericGrades.map(n => parseFloat(Number(n).toFixed(2))));
+        setPrefill(numericGradesPadded);
+        // when we have gradeRows with ids, also build map
+        const idMap3: Record<string, number> = {};
+        gradeRows.forEach(r => { if (r?.id && typeof r.grade === 'number') idMap3[r.id] = parseFloat(Number(r.grade).toFixed(2)); });
+        setPrefillById(idMap3);
 
         // Populate the grades table with mapped curriculum data
         setGrades(gradeRows);
@@ -583,25 +631,37 @@ const AnalysisPage = () => {
       // Check if it's numeric array (current backend format)
       else if (extractedGrades.every(g => typeof g === 'number')) {
         console.log('[OCR] Numeric grades detected, mapping to curriculum order');
-        const curriculumOrder = getCurriculumOrder(user.course);
+        const curriculumOrder = order;
         const numericGrades = extractedGrades as number[];
 
-        // Create grade rows mapped to curriculum order
-        const gradeRows: GradeRow[] = numericGrades.map((gradeValue, index) => {
+        // Create grade rows using backend metadata if available
+        const gradeRows: GradeRow[] = Array.from({ length: expectedLen }).map((_, index) => {
           const curriculumId = curriculumOrder[index] || `G-${index + 1}`;
-
+          let gradeValue = index < numericGrades.length ? numericGrades[index] : 0;
+          
+          // Find metadata for this course
+          const courseMeta = metadata?.find(m => m.id === curriculumId);
+          
           return {
             id: curriculumId,
-            subject: `Subject ${index + 1}`, // Placeholder subject
-            courseCode: '',
-            units: 3, // Default units
-            grade: parseFloat(gradeValue.toFixed(2)),
-            semester: '' // Placeholder semester
+            subject: courseMeta?.title || `Subject ${index + 1}`,
+            units: courseMeta?.units || 3,
+            grade: parseFloat(Number(gradeValue).toFixed(2)),
+            semester: ''
           };
         });
-
-        // Set prefill array for dropdown initialization
-        setPrefill(numericGrades.map(n => parseFloat(Number(n).toFixed(2))));
+        
+        // Set prefill array for dropdown initialization (pad to expected length)
+        const prefillArr: number[] = Array.from({ length: expectedLen }).map((_, i) => {
+          let v = i < numericGrades.length ? numericGrades[i] : 0;
+          if (!isFinite(v as number)) v = 0.0;
+          v = Math.min(5.0, Math.max(0.0, Number(v)));
+          return parseFloat(Number(v).toFixed(2));
+        });
+        setPrefill(prefillArr);
+        const idMap4: Record<string, number> = {};
+        gradeRows.forEach(r => { if (r?.id && typeof r.grade === 'number') idMap4[r.id] = parseFloat(Number(r.grade).toFixed(2)); });
+        setPrefillById(idMap4);
 
         // Populate the grades table with mapped curriculum data
         setGrades(gradeRows);
@@ -622,6 +682,7 @@ const AnalysisPage = () => {
     try {
       setGrades([]);
       setPrefill([]);
+      setPrefillById(null);
       setSavedGradesCache(null);
       setTableResetKey((k) => k + 1); // force remount of the static table to clear internal select state
       if (user.id) {
@@ -647,7 +708,7 @@ const AnalysisPage = () => {
         !grade.subject || 
         grade.subject.trim() === '' || 
         grade.units <= 0 || 
-        grade.grade <= 0 || 
+        grade.grade < 0 || 
         grade.grade > 5.0
       );
 
@@ -673,22 +734,47 @@ const AnalysisPage = () => {
         console.warn('Failed to save grades before analysis', e);
       }
 
-      // Call all three objectives individually
-      console.log('Processing all three objectives...');
-      
-      // Extract just the grade values in curriculum order
+      // Extract just the grade values in curriculum order (aligned to runtime order)
       const gradeValuesArray = extractGradeValuesInOrder(grades, user.course);
-      
-      // Log the grades array being sent to backend
+
+      // Log the grades array being sent to backend and check order alignment
       console.log('=== GRADES ARRAY BEING SENT TO BACKEND ===');
       console.log('Original grades from table:', grades.length);
       console.log('Grade values array length:', gradeValuesArray.length);
       console.log('Grade values array:', gradeValuesArray);
+      if (itOrderIds && itOrderIds.length) {
+        console.log('Runtime emitted order length:', itOrderIds.length);
+        console.log('First 10 order IDs:', itOrderIds.slice(0, 10));
+        console.log('First 10 grade rows [id, grade]:', grades.slice(0, 10).map(g => [g.id, g.grade]));
+        const misalignedIdx: number[] = [];
+        const maxCheck = Math.min(grades.length, itOrderIds.length);
+        for (let i = 0; i < maxCheck; i++) {
+          if (grades[i]?.id !== itOrderIds[i]) misalignedIdx.push(i);
+        }
+        if (misalignedIdx.length) {
+          console.warn('Misaligned indices between grades[] and itOrderIds:', misalignedIdx.slice(0, 20));
+        }
+      }
       console.log('=== END GRADES ARRAY ===');
 
-       // Objective 1: Career Forecasting
+      // Persist current grades to backend (users.grades) before analysis
+      try {
+        // ensure we have a numeric user id and some grades to save
+        if ((user as any)?.id && grades.length > 0) {
+          await fetch(`${getApiUrl('UPDATE_GRADES')}/${(user as any).id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ grades })
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to persist grades (non-blocking):', e);
+      }
+
+      // Objective 1 endpoint selection (CS vs IT)
       const isCS = ((user.course || '').toLowerCase().includes('computer science'));
       const obj1Endpoint = isCS ? 'OBJECTIVE_1_PROCESS_CS' : 'OBJECTIVE_1_PROCESS';
+
       const obj1Resp = await fetch(getApiUrl(obj1Endpoint as 'OBJECTIVE_1_PROCESS' | 'OBJECTIVE_1_PROCESS_CS'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -721,29 +807,39 @@ const AnalysisPage = () => {
         console.log('Updated career forecast:', obj1Result.career_forecast);
       }
       
-      // Objective 2: RIASEC Archetype Analysis
+      // Objective 2: RIASEC Archetype Analysis (with tuning params)
       const obj2Resp = await fetch(getApiUrl('OBJECTIVE_2_PROCESS'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, grades: gradeValuesArray, order_ids: itOrderIds || [] })
+        body: JSON.stringify({
+          email: user.email,
+          grades: gradeValuesArray,
+          order_ids: itOrderIds || [],
+          gamma: 0.9,
+          r: 0.7,
+          tau: 0.8,
+          similarity: 'cosine'
+        })
       });
-      
       if (!obj2Resp.ok) {
         const e = await obj2Resp.json().catch(() => ({}));
         throw new Error(e.message || 'Failed to process archetype analysis');
       }
-      
+
       const obj2Result = await obj2Resp.json();
       console.log('Objective 2 (RIASEC Archetype) result:', obj2Result);
       
       // Update archetype state with results
       if (obj2Result.archetype_analysis) {
         const archetypeData = obj2Result.archetype_analysis;
-        if (archetypeData.primary_archetype) {
+        if (archetypeData.primary_archetype_debiased) {
+          setPrimaryArchetype(archetypeData.primary_archetype_debiased);
+        } else if (archetypeData.primary_archetype) {
           setPrimaryArchetype(archetypeData.primary_archetype);
         }
         // Prefer normalized outputs from backend
-        const p = (archetypeData.opportunity_normalized_percentages
+        const p = (archetypeData.debias_percentages
+          || archetypeData.opportunity_normalized_percentages
           || archetypeData.normalized_percentages
           || archetypeData.archetype_percentages) as Record<string, unknown> | undefined;
         if (p) {
@@ -1024,9 +1120,26 @@ const AnalysisPage = () => {
               {/* Grades Table */}
                 {showGrades && (
                 ((user.course || '').toLowerCase().includes('information technology')) ? (
-                  <ITStaticTable key={tableResetKey} grades={grades} onGradesChange={setGrades} isProcessing={isProcessing} prefillGrades={prefill} onEmitOrder={setItOrderIds} />
+                  <ITStaticTable
+                    key={tableResetKey}
+                    grades={grades}
+                    onGradesChange={setGrades}
+                    isProcessing={isProcessing}
+                    prefillGrades={prefill}
+                    prefillGradesById={prefillById || Object.fromEntries(grades.map(g => [g.id, g.grade]))}
+                    onEmitOrder={setItOrderIds}
+                  />
                 ) : ((user.course || '').toLowerCase().includes('computer science')) ? (
-                  <CStaticTable key={tableResetKey} curriculum="BSCS" grades={grades} onGradesChange={setGrades} isProcessing={isProcessing} prefillGrades={prefill} onEmitOrder={setItOrderIds} />
+                  <CStaticTable
+                    key={tableResetKey}
+                    curriculum="BSCS"
+                    grades={grades}
+                    onGradesChange={setGrades}
+                    isProcessing={isProcessing}
+                    prefillGrades={prefill}
+                    prefillGradesById={Object.fromEntries(grades.map(g => [g.id, g.grade]))}
+                    onEmitOrder={setItOrderIds}
+                  />
                 ) : (
                   <div className={`rounded-lg border p-6 text-center ${
                     isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-[#DACAO2]'
