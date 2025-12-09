@@ -38,7 +38,7 @@ const TranscriptUpload = ({
 
   const handleUploadTranscript = async (file: File) => {
     if (!user.email) return alert('Please sign in again.');
-    
+
     if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
       return alert('Please select a PDF file for transcript upload.');
     }
@@ -50,14 +50,14 @@ const TranscriptUpload = ({
     const prevTranscript = existingTranscript;
     onTranscriptChange({ hasFile: true, fileName: file.name, url: tempUrl, _temp: true });
     onTempSizeChange(Math.max(1, Math.round(file.size / 1024)));
-    
+
     try {
       setIsUploading(true);
-      
+
       // Stage 1: Uploading file
       setUploadStage('Gradalyze is thinking... Uploading TOR...');
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const form = new FormData();
       form.append('email', user.email);
       form.append('file', file, file.name);
@@ -77,41 +77,43 @@ const TranscriptUpload = ({
       if ((j as { storage_path?: string })?.storage_path && user.email) {
         setUploadStage('Gradalyze is thinking... Analyzing document structure...');
         await new Promise(resolve => setTimeout(resolve, 1500));
-        
+
         setUploadStage('Gradalyze is thinking... Applying advanced OCR...');
         await new Promise(resolve => setTimeout(resolve, 1500));
-        
+
         setUploadStage('Gradalyze is thinking... Extracting course and grade data...');
-        
+
         // Create a new FormData for the OCR TOR endpoint
         const ocrForm = new FormData();
         ocrForm.append('file', file, file.name);
-        
+
         const ocr = await fetch(getApiUrl('OCR_TOR_PROCESS'), {
           method: 'POST',
           body: ocrForm
         });
         const ocrJson = await ocr.json().catch(() => ({}));
-        
-        if (Array.isArray(ocrJson?.grade_values)) {
-          console.log('[OCR] Grade values array received:', ocrJson.grade_values);
-          console.log('[OCR] Grades array:', ocrJson.grade_values);
+
+        if (Array.isArray(ocrJson?.grades) && ocrJson.grades.length > 0) {
+          console.log('[OCR] Full grades objects received:', ocrJson.grades);
+          onGradesExtracted(ocrJson.grades);
+        } else if (Array.isArray(ocrJson?.grade_values)) {
+          console.log('[OCR] Only grade values found, using fallback:', ocrJson.grade_values);
           onGradesExtracted(ocrJson.grade_values);
         } else {
-          console.log('[OCR] No grade values found in response:', ocrJson);
+          console.log('[OCR] No grades found in response:', ocrJson);
         }
-        
+
         // Log full text for debugging
         if (ocrJson?.full_text) {
           console.log('[OCR] Full text extracted from PDF:');
           console.log('[OCR] Text length:', ocrJson.full_text.length, 'characters');
           console.log('[OCR] Complete text:', ocrJson.full_text);
         }
-        
+
         setUploadStage('Gradalyze is done! Processing complete.');
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      
+
       onTempSizeChange(null);
     } catch (e: unknown) {
       setUploadStage('Gradalyze encountered an error. Upload failed.');
@@ -154,12 +156,11 @@ const TranscriptUpload = ({
         <span className="ml-2 text-[11px] px-2 py-0.5 rounded bg-red-600 text-white">Required</span>
       </div>
 
-      <div className={`rounded-lg border p-4 transition-all ${
-        isDark  ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50' 
-                : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
-      }`}>
-        
-      
+      <div className={`rounded-lg border p-4 transition-all ${isDark ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50'
+        : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
+        }`}>
+
+
         {existingTranscript?.hasFile ? (
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
@@ -167,9 +168,8 @@ const TranscriptUpload = ({
                 <span className="text-gray-700 text-xs font-semibold">PDF</span>
               </div>
               <div>
-                <div className={`text-sm font-medium ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>{existingTranscript.fileName || 'transcript.pdf'}</div>
+                <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{existingTranscript.fileName || 'transcript.pdf'}</div>
                 {tempTranscriptSizeKB && <div className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-xs`}>{tempTranscriptSizeKB} KB</div>}
               </div>
             </div>
@@ -187,15 +187,15 @@ const TranscriptUpload = ({
                 <label htmlFor="upload-tor" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm cursor-pointer">
                   Upload Transcript
                 </label>
-                <input 
-                  id="upload-tor" 
-                  type="file" 
-                  accept=".pdf" 
-                  className="hidden" 
+                <input
+                  id="upload-tor"
+                  type="file"
+                  accept=".pdf"
+                  className="hidden"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) handleUploadTranscript(f);
-                  }} 
+                  }}
                 />
               </div>
             </div>
@@ -203,11 +203,10 @@ const TranscriptUpload = ({
           </div>
         )}
         {(existingTranscript?._temp || isUploading) && (
-          <div className={`mt-4 p-4 rounded-lg border ${
-            isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-[#DACAO2]'
-          }`} style={{
-            backgroundColor: isDark ? '#2c2c2c' : '#FFFFFF'
-          }}>
+          <div className={`mt-4 p-4 rounded-lg border ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-[#DACAO2]'
+            }`} style={{
+              backgroundColor: isDark ? '#2c2c2c' : '#FFFFFF'
+            }}>
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-3"></div>
               <div className="text-center">

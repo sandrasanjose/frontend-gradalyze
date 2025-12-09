@@ -18,6 +18,7 @@ type Recommendation = {
   roles?: string[];
   hiring_tags?: string[];
   linkedin_url?: string;
+  match_type?: string;
 };
 
 const getInitials = (name: string | undefined): string => {
@@ -103,7 +104,7 @@ const RecommendationsSection = ({ userEmail }: Props) => {
               console.log('[RECS] response (manual):', res.status, res.ok);
               const text = await res.text();
               let json: unknown = {};
-              try { json = text ? JSON.parse(text) : {}; } catch {}
+              try { json = text ? JSON.parse(text) : {}; } catch { }
               console.log('[RECS] body (manual):', json as Record<string, unknown> || text);
               if (!res.ok) throw new Error((json as { message?: string })?.message || 'Request failed');
               const companyRecs = (json as { job_recommendations?: { company_recommendations?: Recommendation[] } })?.job_recommendations?.company_recommendations || [];
@@ -160,6 +161,11 @@ const RecommendationsSection = ({ userEmail }: Props) => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold text-gray-100">{rec.title}</p>
+                  {rec.match_type === 'Cross-Disciplinary' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/30 text-purple-300 font-medium">
+                      Cross-Disciplinary Opportunity
+                    </span>
+                  )}
                   {rec.location && <span className="text-xs text-gray-400">• {rec.location}</span>}
                   {/* score hidden as requested */}
                 </div>
@@ -189,10 +195,10 @@ const RecommendationsSection = ({ userEmail }: Props) => {
                 )}
                 {rec.description && <p className="text-gray-300 text-sm mt-2 leading-relaxed">{rec.description}</p>}
                 {rec.url && (
-                  <a href={rec.url} target="_blank" rel="noreferrer" className="text-blue-400 text-sm mt-2 inline-block" onClick={(e)=>e.stopPropagation()}>Visit site</a>
+                  <a href={rec.url} target="_blank" rel="noreferrer" className="text-blue-400 text-sm mt-2 inline-block" onClick={(e) => e.stopPropagation()}>Visit site</a>
                 )}
                 {rec.linkedin_url && (
-                  <a href={rec.linkedin_url} target="_blank" rel="noreferrer" className="text-blue-400 text-sm mt-2 inline-block ml-3" onClick={(e)=>e.stopPropagation()}>LinkedIn</a>
+                  <a href={rec.linkedin_url} target="_blank" rel="noreferrer" className="text-blue-400 text-sm mt-2 inline-block ml-3" onClick={(e) => e.stopPropagation()}>LinkedIn</a>
                 )}
               </div>
             </li>
@@ -201,12 +207,12 @@ const RecommendationsSection = ({ userEmail }: Props) => {
       )}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/70" onClick={()=>setSelected(null)} />
+          <div className="absolute inset-0 bg-black/70" onClick={() => setSelected(null)} />
           <div className="relative bg-gray-900 border border-gray-800 rounded-2xl max-w-3xl w-full mx-4 p-10 shadow-2xl">
             <button
               aria-label="Close"
               className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 text-lg"
-              onClick={()=>setSelected(null)}
+              onClick={() => setSelected(null)}
             >
               ×
             </button>
@@ -229,7 +235,14 @@ const RecommendationsSection = ({ userEmail }: Props) => {
                 )}
               </div>
               <div className="flex-1">
-                <h4 className="text-3xl font-bold text-white">{selected.title}</h4>
+                <div className="flex items-center gap-3">
+                  <h4 className="text-3xl font-bold text-white">{selected.title}</h4>
+                  {selected.match_type === 'Cross-Disciplinary' && (
+                    <span className="text-sm px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 font-medium">
+                      Cross-Disciplinary Opportunity
+                    </span>
+                  )}
+                </div>
                 {(selected.location || selected.industry || selected.company_size) && (
                   <p className="text-base text-gray-400 mt-1">
                     {selected.location && <span>{selected.location}</span>}

@@ -15,20 +15,18 @@ const SCALE = ['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '
 const TABLE_STYLES = {
   table: "min-w-full text-sm text-left border border-gray-700 rounded-md divide-y divide-gray-700",
   thead: "bg-gray-900 text-gray-300",
-  cell: (isDark: boolean) => `px-3 py-2 border-b border-gray-700 ${
-    isDark ? 'text-white bg-[#1e2939]' : 'text-gray-900 bg-[#938872]'
-  }`,
+  cell: (isDark: boolean) => `px-3 py-2 border-b border-gray-700 ${isDark ? 'text-white bg-[#1e2939]' : 'text-gray-900 bg-[#938872]'
+    }`,
   row: (isDark: boolean, isAlternate: boolean) => isAlternate ? (
     isDark ? 'bg-[#2a2f38]' : 'bg-[#f5f6f7]'
   ) : (
     isDark ? 'bg-[#463f3f]' : 'bg-[#e7e2d8]'
   ),
   select: "bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white w-28 font-mono tabular-nums text-right",
-  container: (isDark: boolean) => `rounded-lg border p-4 transition-colors ${
-    isDark
-      ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50' 
-      : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
-  }`,
+  container: (isDark: boolean) => `rounded-lg border p-4 transition-colors ${isDark
+    ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/50 border-gray-600/50'
+    : 'bg-gradient-to-br from-gray-100/50 to-gray-200/50 border-gray-300/50'
+    }`,
   headerText: (isDark: boolean) => `text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`
 };
 
@@ -38,7 +36,7 @@ const UniversalGradesTable = ({ grades, onGradesChange, isProcessing }: Props) =
   // 1. Dynamically group the flat list of grades by their 'semester' field
   const groupedGrades = useMemo(() => {
     const groups: Record<string, GradeRow[]> = {};
-    
+
     grades.forEach((grade) => {
       // Default to 'Detected Subjects' if semester is missing from OCR
       const sem = grade.semester || 'Detected Subjects';
@@ -56,19 +54,18 @@ const UniversalGradesTable = ({ grades, onGradesChange, isProcessing }: Props) =
     const numValue = parseFloat(newValue);
     if (isNaN(numValue)) return;
 
-    const updatedGrades = grades.map((g) => 
+    const updatedGrades = grades.map((g) =>
       g.id === id ? { ...g, grade: numValue } : g
     );
     onGradesChange(updatedGrades);
   };
 
   return (
-    <div className={`space-y-6 ${
-      isDark
-        ? '[&_select]:!bg-gray-800 [&_select]:!text-white [&_select]:!border-gray-700'
-        : '[&_select]:!bg-white [&_select]:!text-gray-900 [&_select]:!border-gray-300'
-    }`}>
-      
+    <div className={`space-y-6 ${isDark
+      ? '[&_select]:!bg-gray-800 [&_select]:!text-white [&_select]:!border-gray-700'
+      : '[&_select]:!bg-white [&_select]:!text-gray-900 [&_select]:!border-gray-300'
+      }`}>
+
       {/* 3. Iterate through identified semesters (Dynamic Rendering) */}
       {Object.keys(groupedGrades).length > 0 ? (
         Object.entries(groupedGrades).map(([semester, subjectList]) => (
@@ -82,7 +79,6 @@ const UniversalGradesTable = ({ grades, onGradesChange, isProcessing }: Props) =
                   <tr>
                     <th className={`${TABLE_STYLES.cell(isDark)} w-24`}>Course No.</th>
                     <th className={TABLE_STYLES.cell(isDark)}>Descriptive Title</th>
-                    <th className={`${TABLE_STYLES.cell(isDark)} text-right w-20`}>Units</th>
                     <th className={`${TABLE_STYLES.cell(isDark)} text-right w-28`}>Grade</th>
                   </tr>
                 </thead>
@@ -93,24 +89,19 @@ const UniversalGradesTable = ({ grades, onGradesChange, isProcessing }: Props) =
                       <td className="px-3 py-2 border-b border-gray-700 font-mono text-xs">
                         {subject.courseCode || '---'}
                       </td>
-                      
+
                       {/* Subject Title */}
                       <td className="px-3 py-2 border-b border-gray-700">
                         {subject.subject}
                       </td>
-                      
-                      {/* Units */}
-                      <td className="px-3 py-2 border-b border-gray-700 text-right">
-                        {subject.units.toFixed(2)}
-                      </td>
-                      
+
                       {/* Grade Dropdown (Editable) */}
                       <td className="px-3 py-2 border-b border-gray-700 text-right min-w-[7rem]">
-                        <select 
+                        <select
                           aria-label={`Grade for ${subject.subject}`}
-                          value={subject.grade ? subject.grade.toFixed(2) : ''} 
+                          value={subject.grade ? subject.grade.toFixed(2) : ''}
                           onChange={(e) => handleGradeChange(subject.id, e.target.value)}
-                          className={TABLE_STYLES.select} 
+                          className={TABLE_STYLES.select}
                           disabled={isProcessing}
                         >
                           <option value="">--</option>
